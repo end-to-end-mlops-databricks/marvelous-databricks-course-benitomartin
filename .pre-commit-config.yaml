@@ -4,6 +4,7 @@ repos:
     rev: v4.5.0
     hooks:
       - id: check-added-large-files
+        args: ['--maxkb=3000']
       - id: check-json
       - id: check-toml
       - id: check-yaml

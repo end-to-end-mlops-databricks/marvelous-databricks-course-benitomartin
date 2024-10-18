@@ -1,0 +1,523 @@
+2024-10-18 20:07:25.119 | INFO     | __main__:<module>:9 - Loading configuration from project_config.yml
+2024-10-18 20:07:25.124 | INFO     | __main__:<module>:13 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-18 20:07:25.124 | INFO     | __main__:<module>:16 - Initializing DataPreprocessor with data/data.csv
+2024-10-18 20:07:25.183 | INFO     | __main__:<module>:23 - Features shape: (30000, 23)
+2024-10-18 20:07:25.183 | INFO     | __main__:<module>:24 - Target shape: (30000,)
+2024-10-18 20:07:25.184 | INFO     | __main__:<module>:25 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
+2024-10-18 20:08:38.212 | INFO     | __main__:<module>:9 - Loading configuration from project_config.yml
+2024-10-18 20:08:38.218 | INFO     | __main__:<module>:13 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-18 20:08:38.218 | INFO     | __main__:<module>:16 - Initializing DataPreprocessor with data/data.csv
+2024-10-18 20:08:38.218 | INFO     | src.credit_default.data_cleaning:load_data:13 - Loading data from data/data.csv
+2024-10-18 20:08:38.282 | INFO     | src.credit_default.data_cleaning:preprocess_data:17 - Starting data preprocessing
+2024-10-18 20:08:38.283 | INFO     | src.credit_default.data_cleaning:preprocess_data:21 - Dropping columns: ['ID']
+2024-10-18 20:08:38.285 | INFO     | src.credit_default.data_cleaning:preprocess_data:27 - Renaming target column 'default.payment.next.month' to 'Default'
+2024-10-18 20:08:38.286 | INFO     | src.credit_default.data_cleaning:preprocess_data:31 - Capitalizing column names
+2024-10-18 20:08:38.287 | INFO     | src.credit_default.data_cleaning:preprocess_data:35 - Correcting unknown values for Education and Marriage
+2024-10-18 20:08:38.288 | INFO     | src.credit_default.data_cleaning:preprocess_data:40 - Replacing values for columns: ['Pay_0', 'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6']
+2024-10-18 20:08:38.291 | INFO     | src.credit_default.data_cleaning:preprocess_data:43 - Data preprocessing completed
+2024-10-18 20:08:38.292 | INFO     | __main__:<module>:23 - Features shape: (30000, 23)
+2024-10-18 20:08:38.293 | INFO     | __main__:<module>:24 - Target shape: (30000,)
+2024-10-18 20:08:38.293 | INFO     | __main__:<module>:25 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
+2024-10-18 20:09:13.636 | INFO     | __main__:<module>:9 - Loading configuration from project_config.yml
+2024-10-18 20:09:13.642 | INFO     | __main__:<module>:13 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-18 20:09:13.642 | INFO     | __main__:<module>:16 - Initializing DataPreprocessor with data/data.csv
+2024-10-18 20:09:13.642 | INFO     | src.credit_default.data_cleaning:load_data:13 - Loading data from data/data.csv
+2024-10-18 20:09:13.723 | INFO     | src.credit_default.data_cleaning:preprocess_data:17 - Starting data preprocessing
+2024-10-18 20:09:13.723 | INFO     | src.credit_default.data_cleaning:preprocess_data:21 - Dropping columns: ['ID']
+2024-10-18 20:09:13.725 | INFO     | src.credit_default.data_cleaning:preprocess_data:27 - Renaming target column 'default.payment.next.month' to 'Default'
+2024-10-18 20:09:13.726 | INFO     | src.credit_default.data_cleaning:preprocess_data:31 - Capitalizing column names
+2024-10-18 20:09:13.726 | INFO     | src.credit_default.data_cleaning:preprocess_data:35 - Correcting unknown values for Education, Marriage and Pay
+2024-10-18 20:09:13.727 | INFO     | src.credit_default.data_cleaning:preprocess_data:40 - Replacing values for columns: ['Pay_0', 'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6']
+2024-10-18 20:09:13.730 | INFO     | src.credit_default.data_cleaning:preprocess_data:43 - Data preprocessing completed
+2024-10-18 20:09:13.731 | INFO     | __main__:<module>:23 - Features shape: (30000, 23)
+2024-10-18 20:09:13.732 | INFO     | __main__:<module>:24 - Target shape: (30000,)
+2024-10-18 20:09:13.732 | INFO     | __main__:<module>:25 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
+2024-10-18 20:14:16.616 | INFO     | __main__:<module>:9 - Loading configuration from project_config.yml
+2024-10-18 20:14:16.622 | INFO     | __main__:<module>:13 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-18 20:14:16.622 | INFO     | __main__:<module>:16 - Initializing DataPreprocessor with data/data.csv
+2024-10-18 20:14:16.711 | INFO     | src.credit_default.data_cleaning:preprocess_data:48 - Starting data preprocessing...
+2024-10-18 20:14:16.717 | INFO     | src.credit_default.data_cleaning:preprocess_data:69 - Data preprocessing completed.
+2024-10-18 20:14:42.224 | INFO     | __main__:<module>:9 - Loading configuration from project_config.yml
+2024-10-18 20:14:42.228 | INFO     | __main__:<module>:13 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-18 20:14:42.229 | INFO     | __main__:<module>:16 - Initializing DataPreprocessor with data/data.csv
+2024-10-18 20:14:42.229 | INFO     | src.credit_default.data_cleaning:load_data:13 - Loading data from data/data.csv
+2024-10-18 20:14:42.296 | INFO     | src.credit_default.data_cleaning:preprocess_data:17 - Starting data preprocessing
+2024-10-18 20:14:42.296 | INFO     | src.credit_default.data_cleaning:preprocess_data:21 - Dropping columns: ['ID']
+2024-10-18 20:14:42.299 | INFO     | src.credit_default.data_cleaning:preprocess_data:27 - Renaming target column 'default.payment.next.month' to 'Default'
+2024-10-18 20:14:42.301 | INFO     | src.credit_default.data_cleaning:preprocess_data:31 - Capitalizing column names
+2024-10-18 20:14:42.301 | INFO     | src.credit_default.data_cleaning:preprocess_data:35 - Correcting unknown values for Education, Marriage and Pay
+2024-10-18 20:14:42.302 | INFO     | src.credit_default.data_cleaning:preprocess_data:40 - Replacing values for columns: ['Pay_0', 'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6']
+2024-10-18 20:14:42.305 | INFO     | src.credit_default.data_cleaning:preprocess_data:43 - Data preprocessing completed
+2024-10-18 20:14:42.307 | INFO     | __main__:<module>:23 - Features shape: (30000, 23)
+2024-10-18 20:14:42.307 | INFO     | __main__:<module>:24 - Target shape: (30000,)
+2024-10-18 20:14:42.307 | INFO     | __main__:<module>:25 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
+2024-10-18 20:15:38.363 | INFO     | __main__:<module>:9 - Loading configuration from project_config.yml
+2024-10-18 20:15:38.369 | INFO     | __main__:<module>:13 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-18 20:15:38.370 | INFO     | __main__:<module>:16 - Initializing DataPreprocessor with data/data.csv
+2024-10-18 20:15:38.370 | INFO     | src.credit_default.data_cleaning:load_data:39 - Loading data from data/data.csv
+2024-10-18 20:15:38.458 | INFO     | src.credit_default.data_cleaning:preprocess_data:53 - Starting data preprocessing
+2024-10-18 20:15:38.458 | INFO     | src.credit_default.data_cleaning:preprocess_data:57 - Dropping columns: ['ID']
+2024-10-18 20:15:38.461 | INFO     | src.credit_default.data_cleaning:preprocess_data:63 - Renaming target column 'default.payment.next.month' to 'Default'
+2024-10-18 20:15:38.462 | INFO     | src.credit_default.data_cleaning:preprocess_data:67 - Capitalizing column names
+2024-10-18 20:15:38.462 | INFO     | src.credit_default.data_cleaning:preprocess_data:71 - Correcting unknown values for Education, Marriage and Pay
+2024-10-18 20:15:38.463 | INFO     | src.credit_default.data_cleaning:preprocess_data:76 - Replacing values for columns: ['Pay_0', 'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6']
+2024-10-18 20:15:38.467 | INFO     | src.credit_default.data_cleaning:preprocess_data:79 - Data preprocessing completed
+2024-10-18 20:15:38.469 | INFO     | __main__:<module>:23 - Features shape: (30000, 23)
+2024-10-18 20:15:38.469 | INFO     | __main__:<module>:24 - Target shape: (30000,)
+2024-10-18 20:15:38.469 | INFO     | __main__:<module>:25 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
+2024-10-18 20:16:38.929 | INFO     | __main__:<module>:9 - Loading configuration from project_config.yml
+2024-10-18 20:16:38.935 | INFO     | __main__:<module>:13 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-18 20:16:38.936 | INFO     | __main__:<module>:16 - Initializing DataPreprocessor with data/data.csv
+2024-10-18 20:16:38.936 | INFO     | src.credit_default.data_cleaning:load_data:39 - Loading data from data/data.csv
+2024-10-18 20:16:38.984 | INFO     | src.credit_default.data_cleaning:preprocess_data:53 - Starting data preprocessing
+2024-10-18 20:16:38.984 | INFO     | src.credit_default.data_cleaning:preprocess_data:57 - Dropping columns: ['ID']
+2024-10-18 20:16:38.986 | INFO     | src.credit_default.data_cleaning:preprocess_data:63 - Renaming target column 'default.payment.next.month' to 'Default'
+2024-10-18 20:16:38.987 | INFO     | src.credit_default.data_cleaning:preprocess_data:67 - Capitalizing column names
+2024-10-18 20:16:38.988 | INFO     | src.credit_default.data_cleaning:preprocess_data:71 - Correcting unknown values for Education, Marriage and Pay
+2024-10-18 20:16:38.989 | INFO     | src.credit_default.data_cleaning:preprocess_data:76 - Replacing values for columns: ['Pay_0', 'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6']
+2024-10-18 20:16:38.993 | INFO     | src.credit_default.data_cleaning:preprocess_data:79 - Data preprocessing completed
+2024-10-18 20:16:38.996 | INFO     | __main__:<module>:23 - Features shape: (30000, 23)
+2024-10-18 20:16:38.997 | INFO     | __main__:<module>:24 - Target shape: (30000,)
+2024-10-18 20:16:38.997 | INFO     | __main__:<module>:25 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
