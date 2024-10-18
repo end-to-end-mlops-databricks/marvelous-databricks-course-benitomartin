@@ -88,3 +88,4 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Pushed data and package to schema
 - Created new packages
 - Created logs file
+- Added larger size data for pre-commit (upt to 3 MB)
