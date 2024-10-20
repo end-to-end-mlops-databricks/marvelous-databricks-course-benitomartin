@@ -15,26 +15,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      # Use GitHub's setup-python action to install Python 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11.0
 
-      # Set up Python 3.11 with uv
-      - name: Set up Python 3.11 environment
-        run: uv python install 3.11.0
-
-      # Create and activate the virtual environment using uv
-      - name: Create virtual environment
+      # Create a virtual environment and install dependencies
+      - name: Create virtual environment and install dependencies
         run: |
-          uv venv -p 3.11.0 .venv
+          python -m venv .venv
           source .venv/bin/activate
-
-      # Install dependencies using pyproject.toml
-      - name: Install dependencies
-        run: uv pip install -r pyproject.toml --all-extras
-
-      # Lock dependencies
-      - name: Lock dependencies
-        run: uv lock
+          pip install -r pyproject.toml --all-extras
 
       - name: Run pre-commit checks
         run: |
