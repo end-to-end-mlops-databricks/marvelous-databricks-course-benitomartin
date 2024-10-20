@@ -1,10 +1,9 @@
 name: CI
 
 on:
-
   push:
     branches:
-      - setup
+      - setup  # Trigger on push to the 'setup' branch
 
   pull_request:
     branches:
@@ -22,7 +21,11 @@ jobs:
       - name: "Set up Python"
         uses: actions/setup-python@v5
         with:
-          python-version-file: "pyproject.toml"
+          python-version-file: "pyproject.toml"  # Automatically installs the correct Python version
+                                                 # Specified in requires-python
+      - name: Install dependencies
+        run: |
+          uv pip install -r pyproject.toml --all-extras
 
       - name: Run pre-commit checks
         run: |
