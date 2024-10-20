@@ -79,7 +79,7 @@ databricks fs cp dist/mlops_with_databricks-0.0.2-py3-none-any.whl dbfs:/Volumes
 Default of Credit Card Clients Dataset
 https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/data
 
-## First Commit
+## First PR
 
 - Corrected README.md ".venv" instead of "venv"
 - Added README.md Databricks instructions
