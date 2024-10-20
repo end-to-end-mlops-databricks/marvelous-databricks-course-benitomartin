@@ -18,13 +18,18 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
-      - name: "Set up Python"
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version-file: "pyproject.toml"  # Automatically installs the correct Python version
                                                  # Specified in requires-python
-      - name: Install dependencies
+      - name: Create virtual environment
         run: |
+          uv venv -p 3.11 .venv
+
+      - name: Activate virtual environment and install dependencies
+        run: |
+          source .venv/bin/activate
           uv pip install -r pyproject.toml --all-extras
 
       - name: Run pre-commit checks
