@@ -24,9 +24,9 @@ jobs:
       # Create a virtual environment and install dependencies
       - name: Create virtual environment and install dependencies
         run: |
-          python -m venv .venv
           source .venv/bin/activate
-          pip install -r pyproject.toml --all-extras
+          uv pip install -r pyproject.toml --all-extras
+          uv lock
 
       - name: Run pre-commit checks
         run: |
