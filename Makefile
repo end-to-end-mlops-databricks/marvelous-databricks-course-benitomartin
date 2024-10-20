@@ -7,6 +7,10 @@ all: hooks clean ## Run all tasks
 hooks: ## Run pre-commit hooks
 	pre-commit run --all-files
 
+req: ## Install requirements
+	uv pip install -r pyproject.toml --all-extras
+	uv lock
+
 ruff: ## Run Ruff linter separately
 	ruff check . --fix --exit-non-zero-on-fix --show-fixes
 
