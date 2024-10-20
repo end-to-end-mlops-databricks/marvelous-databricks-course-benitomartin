@@ -1,8 +1,8 @@
 # Makefile
 
-.PHONY: all hooks ruff test clean
+.PHONY: all req hooks ruff test clean
 
-all: hooks clean ## Run all tasks
+all: hooks clean ## Run hooks and clean
 
 hooks: ## Run pre-commit hooks
 	pre-commit run --all-files
