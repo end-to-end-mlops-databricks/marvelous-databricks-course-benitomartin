@@ -24,9 +24,6 @@ jobs:
         with:
           python-version-file: "pyproject.toml"
 
-      - name: Install the dependencies
-        run: uv sync
-
       - name: Run pre-commit checks
         run: |
           pre-commit run --all-files
