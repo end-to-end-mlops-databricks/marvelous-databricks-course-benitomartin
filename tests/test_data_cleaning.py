@@ -84,7 +84,3 @@ def test_columns_after_preprocessing(real_data, config):
 
     # Check if the columns in the cleaned data match expected columns
     assert all(col in expected_columns for col in data_cleaning.df.columns)
-
-
-if __name__ == "__main__":
-    pytest.main()

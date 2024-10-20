@@ -1,6 +1,6 @@
 [project]
 name = "mlops-with-databricks"
-version = "0.0.3"                                               # New version
+version = "0.0.4"                                               # New version
 description = "MLOps with Databricks"
 readme = "README.md"
 requires-python = "==3.11"
@@ -25,11 +25,14 @@ dev = ["databricks-connect>=15.4.1, <16",
        "databricks-sdk>=0.32.0, <0.33",
        "ipykernel>=6.29.5, <7",
        "pip>=24.2",
-       "pytest>=8.1.1, <9"                                     # Add pytest
+       "pytest>=8.1.1, <9",                                    # Add pytest
+       "ruff>=0.2.0, <1"                                       # Add ruff (version = "0.0.4")
       ]
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
 select = [
     "F",  # pyflakes rules
     "E",  # pycodestyle error rules

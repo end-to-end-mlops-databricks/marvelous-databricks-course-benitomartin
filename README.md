@@ -89,4 +89,4 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Created new packages
 - Created logs file
 - Added larger size data for pre-commit (upt to 3 MB)
-- Added pytest in dev dependencies
+- Added pytest, loguru, precommit, imbalanced-learn and ruff in dependencies
