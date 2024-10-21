@@ -1,0 +1,407 @@
+2024-10-21 13:52:46.805 | INFO     | __main__:load_config:47 - Loading configuration from project_config.yml
+2024-10-21 13:52:46.810 | INFO     | __main__:load_config:55 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-21 13:52:46.810 | INFO     | __main__:run:68 - Initializing DataPreprocessor with data path: data/data.csv
+2024-10-21 13:52:46.810 | INFO     | src.credit_default.data_preprocessing:__init__:42 - Initializing data cleaning process
+2024-10-21 13:52:46.810 | INFO     | src.credit_default.data_cleaning:validate_config:67 - Validating configuration settings
+2024-10-21 13:52:46.811 | INFO     | src.credit_default.data_cleaning:load_data:47 - Loading data from data/data.csv
+2024-10-21 13:52:46.855 | INFO     | src.credit_default.data_cleaning:load_data:53 - File loaded successfully
+2024-10-21 13:52:46.855 | INFO     | src.credit_default.data_cleaning:validate_columns:86 - Validating if required columns exist in the DataFrame
+2024-10-21 13:52:46.857 | INFO     | src.credit_default.data_cleaning:preprocess_data:102 - Starting data preprocessing
+2024-10-21 13:52:46.857 | INFO     | src.credit_default.data_cleaning:_drop_columns:115 - Dropping columns: ID
+2024-10-21 13:52:46.860 | INFO     | src.credit_default.data_cleaning:_rename_target_column:122 - Renaming target column 'default.payment.next.month' to 'Default'
+2024-10-21 13:52:46.861 | INFO     | src.credit_default.data_cleaning:_capitalize_columns:127 - Capitalizing column names
+2024-10-21 13:52:46.861 | INFO     | src.credit_default.data_cleaning:_correct_unknown_values:132 - Correcting unknown values for Education, Marriage and Pay
+2024-10-21 13:52:46.865 | INFO     | src.credit_default.data_cleaning:preprocess_data:109 - Data preprocessing completed
+2024-10-21 13:52:46.865 | INFO     | src.credit_default.data_preprocessing:__init__:45 - Data cleaning process completed
+2024-10-21 13:52:46.867 | INFO     | src.credit_default.data_preprocessing:__init__:69 - Setting up ColumnTransformer for scaling
+2024-10-21 13:52:46.867 | INFO     | src.credit_default.data_preprocessing:get_processed_data:93 - Retrieving processed data and preprocessor
+2024-10-21 13:52:46.867 | INFO     | __main__:run:78 - Features shape: (30000, 23)
+2024-10-21 13:52:46.867 | INFO     | __main__:run:79 - Target shape: (30000,)
+2024-10-21 13:52:46.867 | INFO     | __main__:run:80 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
+2024-10-21 13:52:46.869 | INFO     | __main__:<module>:99 - Credit default pipeline completed successfully
+2024-10-21 13:54:39.569 | INFO     | __main__:load_config:49 - Loading configuration from project_config.yml
+2024-10-21 13:54:39.574 | INFO     | __main__:load_config:57 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-21 13:54:39.574 | INFO     | __main__:run:70 - Initializing DataPreprocessor with data path: ../data/data.csv
+2024-10-21 13:54:39.574 | INFO     | src.credit_default.data_preprocessing:__init__:42 - Initializing data cleaning process
+2024-10-21 13:54:39.574 | INFO     | src.credit_default.data_cleaning:validate_config:67 - Validating configuration settings
+2024-10-21 13:54:39.574 | INFO     | src.credit_default.data_cleaning:load_data:47 - Loading data from ../data/data.csv
+2024-10-21 13:54:39.575 | ERROR    | src.credit_default.data_cleaning:load_data:49 - File ../data/data.csv does not exist
+2024-10-21 13:54:39.575 | ERROR    | src.credit_default.data_preprocessing:__init__:80 - An error occurred during initialization: File ../data/data.csv does not exist
+2024-10-21 13:54:39.575 | ERROR    | __main__:run:84 - An error occurred during the data preprocessing pipeline: File ../data/data.csv does not exist
+2024-10-21 13:54:55.817 | INFO     | __main__:load_config:49 - Loading configuration from project_config.yml
+2024-10-21 13:54:55.822 | INFO     | __main__:load_config:57 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-21 13:54:55.822 | INFO     | __main__:run:70 - Initializing DataPreprocessor with data path: data/data.csv
+2024-10-21 13:54:55.822 | INFO     | src.credit_default.data_preprocessing:__init__:42 - Initializing data cleaning process
+2024-10-21 13:54:55.822 | INFO     | src.credit_default.data_cleaning:validate_config:67 - Validating configuration settings
+2024-10-21 13:54:55.822 | INFO     | src.credit_default.data_cleaning:load_data:47 - Loading data from data/data.csv
+2024-10-21 13:54:55.863 | INFO     | src.credit_default.data_cleaning:load_data:53 - File loaded successfully
+2024-10-21 13:54:55.863 | INFO     | src.credit_default.data_cleaning:validate_columns:86 - Validating if required columns exist in the DataFrame
+2024-10-21 13:54:55.864 | INFO     | src.credit_default.data_cleaning:preprocess_data:102 - Starting data preprocessing
+2024-10-21 13:54:55.864 | INFO     | src.credit_default.data_cleaning:_drop_columns:115 - Dropping columns: ID
+2024-10-21 13:54:55.865 | INFO     | src.credit_default.data_cleaning:_rename_target_column:122 - Renaming target column 'default.payment.next.month' to 'Default'
+2024-10-21 13:54:55.866 | INFO     | src.credit_default.data_cleaning:_capitalize_columns:127 - Capitalizing column names
+2024-10-21 13:54:55.867 | INFO     | src.credit_default.data_cleaning:_correct_unknown_values:132 - Correcting unknown values for Education, Marriage and Pay
+2024-10-21 13:54:55.870 | INFO     | src.credit_default.data_cleaning:preprocess_data:109 - Data preprocessing completed
+2024-10-21 13:54:55.871 | INFO     | src.credit_default.data_preprocessing:__init__:45 - Data cleaning process completed
+2024-10-21 13:54:55.872 | INFO     | src.credit_default.data_preprocessing:__init__:69 - Setting up ColumnTransformer for scaling
+2024-10-21 13:54:55.872 | INFO     | src.credit_default.data_preprocessing:get_processed_data:93 - Retrieving processed data and preprocessor
+2024-10-21 13:54:55.872 | INFO     | __main__:run:80 - Features shape: (30000, 23)
+2024-10-21 13:54:55.873 | INFO     | __main__:run:81 - Target shape: (30000,)
+2024-10-21 13:54:55.873 | INFO     | __main__:run:82 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
+2024-10-21 13:54:55.874 | INFO     | __main__:<module>:101 - Credit default pipeline completed successfully
+2024-10-21 14:07:15.833 | INFO     | __main__:load_config:50 - Loading configuration from project_config.yml
+2024-10-21 14:07:15.838 | INFO     | __main__:load_config:58 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-21 14:07:15.838 | INFO     | __main__:run:71 - Initializing DataPreprocessor with data path: data/data.csv
+2024-10-21 14:07:15.838 | INFO     | src.credit_default.data_preprocessing:__init__:43 - Initializing data cleaning process
+2024-10-21 14:07:15.838 | INFO     | src.credit_default.data_cleaning:validate_config:68 - Validating configuration settings
+2024-10-21 14:07:15.839 | INFO     | src.credit_default.data_cleaning:load_data:48 - Loading data from data/data.csv
+2024-10-21 14:07:15.888 | INFO     | src.credit_default.data_cleaning:load_data:54 - File loaded successfully
+2024-10-21 14:07:15.888 | INFO     | src.credit_default.data_cleaning:validate_columns:87 - Validating if required columns exist in the DataFrame
+2024-10-21 14:07:15.890 | INFO     | src.credit_default.data_cleaning:preprocess_data:103 - Starting data preprocessing
+2024-10-21 14:07:15.890 | INFO     | src.credit_default.data_cleaning:_drop_columns:116 - Dropping columns: ID
+2024-10-21 14:07:15.892 | INFO     | src.credit_default.data_cleaning:_rename_target_column:123 - Renaming target column 'default.payment.next.month' to 'Default'
+2024-10-21 14:07:15.894 | INFO     | src.credit_default.data_cleaning:_capitalize_columns:128 - Capitalizing column names
+2024-10-21 14:07:15.895 | INFO     | src.credit_default.data_cleaning:_correct_unknown_values:133 - Correcting unknown values for Education, Marriage and Pay
+2024-10-21 14:07:15.899 | INFO     | src.credit_default.data_cleaning:preprocess_data:110 - Data preprocessing completed
+2024-10-21 14:07:15.899 | INFO     | src.credit_default.data_preprocessing:__init__:46 - Data cleaning process completed
+2024-10-21 14:07:15.901 | INFO     | src.credit_default.data_preprocessing:__init__:70 - Setting up ColumnTransformer for scaling
+2024-10-21 14:07:15.902 | INFO     | src.credit_default.data_preprocessing:get_processed_data:94 - Retrieving processed data and preprocessor
+2024-10-21 14:07:15.902 | INFO     | __main__:run:81 - Features shape: (30000, 23)
+2024-10-21 14:07:15.902 | INFO     | __main__:run:82 - Target shape: (30000,)
+2024-10-21 14:07:15.902 | INFO     | __main__:run:83 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
+2024-10-21 14:07:15.904 | INFO     | __main__:<module>:102 - Credit default pipeline completed successfully
+2024-10-21 14:08:38.506 | INFO     | __main__:load_config:50 - Loading configuration from project_config.yml
+2024-10-21 14:08:38.511 | INFO     | __main__:load_config:58 - Configuration loaded:
+catalog_name: maven
+columns_to_drop:
+- ID
+num_features:
+- dtype: float64
+  name: LIMIT_BAL
+- dtype: int64
+  name: SEX
+- dtype: int64
+  name: EDUCATION
+- dtype: int64
+  name: MARRIAGE
+- dtype: int64
+  name: AGE
+- dtype: int64
+  name: PAY_0
+- dtype: int64
+  name: PAY_2
+- dtype: int64
+  name: PAY_3
+- dtype: int64
+  name: PAY_4
+- dtype: int64
+  name: PAY_5
+- dtype: int64
+  name: PAY_6
+- dtype: float64
+  name: BILL_AMT1
+- dtype: float64
+  name: BILL_AMT2
+- dtype: float64
+  name: BILL_AMT3
+- dtype: float64
+  name: BILL_AMT4
+- dtype: float64
+  name: BILL_AMT5
+- dtype: float64
+  name: BILL_AMT6
+- dtype: float64
+  name: PAY_AMT1
+- dtype: float64
+  name: PAY_AMT2
+- dtype: float64
+  name: PAY_AMT3
+- dtype: float64
+  name: PAY_AMT4
+- dtype: float64
+  name: PAY_AMT5
+- dtype: float64
+  name: PAY_AMT6
+parameters:
+  learning_rate: 0.05
+  random_state: 42
+schema_name: default
+target:
+- dtype: int64
+  name: default.payment.next.month
+
+2024-10-21 14:08:38.512 | INFO     | __main__:run:71 - Initializing DataPreprocessor with data path: data/data.csv
+2024-10-21 14:08:38.512 | INFO     | src.credit_default.data_preprocessing:__init__:45 - Initializing data cleaning process
+2024-10-21 14:08:38.512 | INFO     | src.credit_default.data_cleaning:validate_config:69 - Validating configuration settings
+2024-10-21 14:08:38.512 | INFO     | src.credit_default.data_cleaning:load_data:49 - Loading data from data/data.csv
+2024-10-21 14:08:38.549 | INFO     | src.credit_default.data_cleaning:load_data:55 - File loaded successfully
+2024-10-21 14:08:38.549 | INFO     | src.credit_default.data_cleaning:validate_columns:88 - Validating if required columns exist in the DataFrame
+2024-10-21 14:08:38.549 | INFO     | src.credit_default.data_cleaning:preprocess_data:104 - Starting data preprocessing
+2024-10-21 14:08:38.549 | INFO     | src.credit_default.data_cleaning:_drop_columns:117 - Dropping columns: ID
+2024-10-21 14:08:38.551 | INFO     | src.credit_default.data_cleaning:_rename_target_column:124 - Renaming target column 'default.payment.next.month' to 'Default'
+2024-10-21 14:08:38.552 | INFO     | src.credit_default.data_cleaning:_capitalize_columns:129 - Capitalizing column names
+2024-10-21 14:08:38.552 | INFO     | src.credit_default.data_cleaning:_correct_unknown_values:134 - Correcting unknown values for Education, Marriage and Pay
+2024-10-21 14:08:38.555 | INFO     | src.credit_default.data_cleaning:preprocess_data:111 - Data preprocessing completed
+2024-10-21 14:08:38.556 | INFO     | src.credit_default.data_preprocessing:__init__:48 - Data cleaning process completed
+2024-10-21 14:08:38.557 | INFO     | src.credit_default.data_preprocessing:__init__:72 - Setting up ColumnTransformer for scaling
+2024-10-21 14:08:38.557 | INFO     | src.credit_default.data_preprocessing:get_processed_data:96 - Retrieving processed data and preprocessor
+2024-10-21 14:08:38.557 | INFO     | __main__:run:81 - Features shape: (30000, 23)
+2024-10-21 14:08:38.557 | INFO     | __main__:run:82 - Target shape: (30000,)
+2024-10-21 14:08:38.557 | INFO     | __main__:run:83 - Preprocessor: ColumnTransformer(remainder='passthrough',
+                  transformers=[('robust_scaler', RobustScaler(),
+                                 ['Limit_bal', 'Bill_amt1', 'Bill_amt2',
+                                  'Bill_amt3', 'Bill_amt4', 'Bill_amt5',
+                                  'Bill_amt6', 'Pay_amt1', 'Pay_amt2',
+                                  'Pay_amt3', 'Pay_amt4', 'Pay_amt5',
+                                  'Pay_amt6'])])
+2024-10-21 14:08:38.559 | INFO     | __main__:<module>:102 - Credit default pipeline completed successfully
