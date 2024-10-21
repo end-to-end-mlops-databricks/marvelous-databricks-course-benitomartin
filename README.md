@@ -91,3 +91,18 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Added larger size data for pre-commit (upt to 3 MB)
 - Added pytest, loguru, precommit, imbalanced-learn and ruff in dependencies
 - Added Makefile
+
+
+# Bug
+
+Run data_preprocessing as module
+```
+python -m src.credit_default.data_preprocessing
+```
+
+Or change import as
+
+```
+from src.credit_default.data_cleaning import DataCleaning
+from data_cleaning import DataCleaning
+```

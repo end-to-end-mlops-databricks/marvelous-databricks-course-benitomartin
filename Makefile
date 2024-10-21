@@ -2,7 +2,7 @@
 
 .PHONY: all req hooks ruff test clean
 
-all: hooks clean ## Run hooks and clean
+all: hooks clean ## Run hooks and clean pycache
 
 hooks: ## Run pre-commit hooks
 	pre-commit run --all-files

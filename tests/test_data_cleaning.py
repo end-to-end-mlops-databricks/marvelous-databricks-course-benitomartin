@@ -1,33 +1,41 @@
+import os
+
 import pandas as pd
 import pytest
 import yaml
+from dotenv import load_dotenv
 
 from src.credit_default.data_cleaning import DataCleaning
+
+# Load environment variables
+load_dotenv()
+FILEPATH = os.environ["FILEPATH"]
+CONFIG = os.environ["CONFIG"]
 
 
 @pytest.fixture
 def real_data():
     """Load real data for testing."""
-    return pd.read_csv("data/data.csv")
+    return pd.read_csv(FILEPATH)
 
 
 @pytest.fixture
 def config():
     """Load configuration from the YAML file for testing."""
-    with open("project_config.yml", "r") as f:
+    with open(CONFIG, "r") as f:
         config_data = yaml.safe_load(f)
     return config_data
 
 
 def test_load_data(real_data, config):
     """Test loading data from the real."""
-    data_cleaning = DataCleaning("data/data.csv", config)
+    data_cleaning = DataCleaning(FILEPATH, config)
     assert data_cleaning.df.equals(real_data)
 
 
 def test_preprocess_data(real_data, config):
     """Test the data preprocessing steps with real data."""
-    data_cleaning = DataCleaning("data/data.csv", config)
+    data_cleaning = DataCleaning(FILEPATH, config)
     cleaned_df = data_cleaning.preprocess_data()
 
     # Check if the ID column is dropped
@@ -52,7 +60,7 @@ def test_preprocess_data(real_data, config):
 
 def test_columns_after_preprocessing(real_data, config):
     """Test if columns match the expected columns in the config."""
-    data_cleaning = DataCleaning("data/data.csv", config)
+    data_cleaning = DataCleaning(FILEPATH, config)
     data_cleaning.preprocess_data()
 
     expected_columns = [

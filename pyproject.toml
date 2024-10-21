@@ -1,7 +1,7 @@
 [project]
-name = "mlops-with-databricks"
-version = "0.0.4"                                               # New version
-description = "MLOps with Databricks"
+name = "credit-default-databricks"
+version = "0.0.5"                                               # New version
+description = "MLOps Project with Databricks: Credit Default Dataset"
 readme = "README.md"
 requires-python = "==3.11"
 dependencies = ["lightgbm>=4.5.0, <5",
@@ -26,8 +26,9 @@ dev = ["databricks-connect>=15.4.1, <16",
        "ipykernel>=6.29.5, <7",
        "pip>=24.2",
        "pytest>=8.1.1, <9",                                    # Add pytest
-       "ruff>=0.2.0, <1"                                       # Add ruff (version = "0.0.4")
-      ]
+       "ruff>=0.2.0, <1" ,                                     # Add ruff (version = "0.0.4")
+       "python-dotenv>=1.0.0, <2"                              # Add python-dotenv (version = "0.0.5")
+]
 
 [tool.ruff]
 line-length = 120

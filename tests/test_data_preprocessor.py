@@ -1,29 +1,30 @@
-import pandas as pd
+import os
+
 import pytest
 import yaml
+from dotenv import load_dotenv
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import RobustScaler
 
 from src.credit_default.data_preprocessing import DataPreprocessor
 
-
-@pytest.fixture
-def real_data():
-    """Load real data for testing."""
-    return pd.read_csv("data/data.csv")
+# Load environment variables
+load_dotenv()
+FILEPATH = os.environ["FILEPATH"]
+CONFIG = os.environ["CONFIG"]
 
 
 @pytest.fixture
 def config():
     """Load configuration from the YAML file for testing."""
-    with open("project_config.yml", "r") as f:
+    with open(CONFIG, "r") as f:
         config_data = yaml.safe_load(f)
     return config_data
 
 
-def test_data_preprocessor(real_data, config):
+def test_data_preprocessor(config):
     """Test the DataPreprocessor class for preprocessing and scaling."""
-    data_preprocessor = DataPreprocessor("data/data.csv", config)
+    data_preprocessor = DataPreprocessor(FILEPATH, config)
 
     # Check that the cleaned data is as expected
     assert data_preprocessor.cleaned_data.equals(data_preprocessor.data_cleaning.df)
