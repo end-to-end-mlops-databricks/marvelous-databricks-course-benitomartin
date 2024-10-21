@@ -71,7 +71,7 @@ databricks volumes create maven default packages MANAGED
 databricks fs cp dist/mlops_with_databricks-0.0.1-py3-none-any.whl dbfs:/Volumes/maven/default/packages
 
 # Overwrite Package
-databricks fs cp dist/mlops_with_databricks-0.0.2-py3-none-any.whl dbfs:/Volumes/maven/default/packages --overwrite
+databricks fs cp dist/credit_default_databricks-0.0.5-py3-none-any.whl dbfs:/Volumes/maven/default/packages --overwrite
 ```
 
 ## Data
