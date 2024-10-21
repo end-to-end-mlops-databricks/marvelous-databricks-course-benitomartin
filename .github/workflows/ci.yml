@@ -36,6 +36,9 @@ jobs:
         run: |
           echo "FILEPATH=data/data.csv" >> .env
           echo "CONFIG=project_config.yml" >> .env
+          echo "CLEANING_LOGS=logs/data_cleaning.log" >> .env
+          echo "PREPROCESSING_LOGS=logs/data_preprocessing.log" >> .env
+          echo "PIPELINE_LOGS=logs/pipeline.log" >> .env
 
       - name: Run pre-commit checks
         run: |
