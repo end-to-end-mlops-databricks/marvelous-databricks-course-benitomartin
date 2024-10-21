@@ -32,6 +32,11 @@ jobs:
           source .venv/bin/activate
           uv pip install -r pyproject.toml --all-extras
 
+      - name: Load environment variables
+        run: |
+          echo "FILEPATH=data/data.csv" >> .env
+          echo "CONFIG=project_config.yml" >> .env
+
       - name: Run pre-commit checks
         run: |
           source .venv/bin/activate
