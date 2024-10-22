@@ -1,7 +1,7 @@
 [project]
-name = "mlops-with-databricks"
-version = "0.0.1"
-description = "MLOps with Databricks"
+name = "credit-default-databricks"
+version = "0.0.5"                                               # New version
+description = "MLOps Project with Databricks: Credit Default Dataset"
 readme = "README.md"
 requires-python = "==3.11"
 dependencies = ["lightgbm>=4.5.0, <5",
@@ -14,16 +14,26 @@ dependencies = ["lightgbm>=4.5.0, <5",
                 "cffi>=1.17.1, <2",
                 "scipy>=1.14.1, <2",
                 "matplotlib>=3.9.2, <4",
-                "databricks-feature-engineering>=0.6, <1"]
+                "databricks-feature-engineering>=0.6, <1",
+                "imbalanced-learn>=0.11.0, <1",                # Added imbalanced-learn
+                "loguru>=0.6.0, <1",                           # Added loguru
+                "pre-commit>=2.20.0, <3"                       # Added pre-commit
+            ]
 
 [project.optional-dependencies]
 dev = ["databricks-connect>=15.4.1, <16",
        "databricks-sdk>=0.32.0, <0.33",
        "ipykernel>=6.29.5, <7",
-       "pip>=24.2"]
+       "pip>=24.2",
+       "pytest>=8.1.1, <9",                                    # Add pytest
+       "ruff>=0.2.0, <1" ,                                     # Add ruff (version = "0.0.4")
+       "python-dotenv>=1.0.0, <2"                              # Add python-dotenv (version = "0.0.5")
+]
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
 select = [
     "F",  # pyflakes rules
     "E",  # pycodestyle error rules

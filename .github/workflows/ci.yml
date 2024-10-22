@@ -1,6 +1,10 @@
 name: CI
 
 on:
+  # push:
+  #   branches:
+  #     - setup  # Trigger on push to the 'setup' branch
+
   pull_request:
     branches:
       - main
@@ -15,11 +19,29 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Set up Python
-        run: uv python install 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"  # Automatically installs the correct Python version
+                                                 # Specified in requires-python
+      - name: Create virtual environment
+        run: |
+          uv venv -p 3.11 .venv
 
-      - name: Install the dependencies
-        run: uv sync 
+      - name: Activate virtual environment and install dependencies
+        run: |
+          source .venv/bin/activate
+          uv pip install -r pyproject.toml --all-extras
+
+      - name: Load environment variables
+        run: |
+          echo "FILEPATH=data/data.csv" >> .env
+          echo "CONFIG=project_config.yml" >> .env
+          echo "CLEANING_LOGS=logs/data_cleaning.log" >> .env
+          echo "PREPROCESSING_LOGS=logs/data_preprocessing.log" >> .env
+          echo "PIPELINE_LOGS=logs/pipeline.log" >> .env
 
       - name: Run pre-commit checks
         run: |
+          source .venv/bin/activate
+          pre-commit install
           pre-commit run --all-files
