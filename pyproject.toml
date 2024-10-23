@@ -1,9 +1,11 @@
 [project]
 name = "credit-default-databricks"
-version = "0.0.5"                                               # New version
+version = "0.0.7"                                               # New version
 description = "MLOps Project with Databricks: Credit Default Dataset"
+keywords = ["MLOps", "Databricks", "Machine Learning"]
+authors = [{ name = "Benito Martin"}]
 readme = "README.md"
-requires-python = "==3.11"
+requires-python = ">=3.11,<3.12"                               # Imrpoved defined Python (v 0.0.7)
 dependencies = ["lightgbm>=4.5.0, <5",
                 "scikit-learn>=1.5.1, <2",
                 "cloudpickle>=3.0.0, <4",
@@ -29,6 +31,19 @@ dev = ["databricks-connect>=15.4.1, <16",
        "ruff>=0.2.0, <1" ,                                     # Add ruff (version = "0.0.4")
        "python-dotenv>=1.0.0, <2"                              # Add python-dotenv (version = "0.0.5")
 ]
+
+# Build system configuration
+[build-system]                                                 # Adding Hatchling (v 0.0.7)
+requires = ["hatchling>=1.23.0"]
+build-backend = "hatchling.build"
+
+# # Hatch configuration for src layout: allow imports without "src"
+[tool.hatch.build]
+packages = ["src"]
+
+# Wheel build configuration
+[tool.hatch.build.targets.wheel]
+packages = ["src/credit_default"]
 
 [tool.ruff]
 line-length = 120

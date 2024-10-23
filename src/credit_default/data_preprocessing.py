@@ -1,15 +1,13 @@
 import os
-import sys
+from typing import Tuple
 
-import yaml
 from dotenv import load_dotenv
 from loguru import logger
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import RobustScaler
 
-from src.credit_default.data_cleaning import DataCleaning
-
-# from data_cleaning import DataCleaning
+from credit_default.data_cleaning import DataCleaning
+from credit_default.utils import load_config, setup_logging
 
 # Load environment variables
 load_dotenv()
@@ -83,12 +81,12 @@ class DataPreprocessor:
             logger.error(f"An error occurred during initialization: {str(e)}")
             raise
 
-    def get_processed_data(self) -> tuple:
+    def get_processed_data(self) -> Tuple:
         """
         Retrieves the processed features, target, and preprocessor.
 
         Returns:
-            tuple: A tuple containing:
+            Tuple: A tuple containing:
                 - pd.DataFrame: The features DataFrame.
                 - pd.Series: The target Series.
                 - ColumnTransformer: The preprocessor for scaling.
@@ -98,15 +96,11 @@ class DataPreprocessor:
 
 
 if __name__ == "__main__":
-    # Configure logger
-    # Remove the default logger
-    logger.remove()
-    logger.add(PREPROCESSING_LOGS, level="DEBUG", rotation="500 MB")
-    logger.add(sys.stdout, level="DEBUG")
+    # Configure logger using setup_logging
+    setup_logging(PREPROCESSING_LOGS)  # Set up logging with the log file path
 
     # Load configuration from YAML file
-    with open(CONFIG, "r") as f:
-        config = yaml.safe_load(f)
+    config = load_config(CONFIG)
 
     # Test the DataPreprocessor class
     try:

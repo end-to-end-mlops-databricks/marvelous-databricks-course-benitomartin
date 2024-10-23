@@ -1,11 +1,13 @@
 import os
 import sys
+from typing import Any, Dict
 
-import yaml
 from dotenv import load_dotenv
 from loguru import logger
 
-from src.credit_default.data_preprocessing import DataPreprocessor
+from credit_default.data_preprocessing import DataPreprocessor
+from credit_default.model_training import ModelTrainer
+from credit_default.utils import load_config, setup_logging
 
 # Load environment variables
 load_dotenv()
@@ -32,36 +34,11 @@ class CreditDefaultPipeline:
             config_path (str): The file path to the configuration YAML file.
             data_path (str): The file path to the CSV data file to be processed.
         """
-        self.config_path = config_path
-        self.data_path = data_path
-        self.config = self.load_config()
+        self.config_path: str = config_path
+        self.data_path: str = data_path
+        self.config: Dict = load_config(self.config_path)  # Load config directly
 
-    def load_config(self) -> dict:
-        """
-        Load the configuration settings from the specified YAML file.
-
-        Returns:
-            dict: The configuration settings loaded from the YAML file.
-
-        Raises:
-            FileNotFoundError: If the configuration file does not exist.
-            yaml.YAMLError: If there is an error parsing the YAML file.
-        """
-        logger.info("Loading configuration from {}", self.config_path)
-        if not os.path.exists(self.config_path):
-            logger.error("Configuration file not found: {}", self.config_path)
-            raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
-
-        try:
-            with open(self.config_path, "r") as file:
-                config = yaml.safe_load(file)
-            logger.info("Configuration loaded:\n{}", yaml.dump(config, default_flow_style=False))
-            return config
-        except yaml.YAMLError as e:
-            logger.error("Error parsing YAML file: {}", str(e))
-            raise
-
-    def run(self):
+    def run(self) -> None:
         """
         Run the data preprocessing pipeline.
 
@@ -81,16 +58,55 @@ class CreditDefaultPipeline:
             logger.info("Features shape: {}", X.shape)
             logger.info("Target shape: {}", y.shape)
             logger.info("Preprocessor: {}", preprocessor)
+
+            # Train and evaluate the model
+            self.train_and_evaluate(X, y, preprocessor)
+
         except Exception as e:
             logger.error("An error occurred during the data preprocessing pipeline: {}", str(e))
             sys.exit(1)
 
+    def train_and_evaluate(self, X: Any, y: Any, preprocessor: Any) -> None:
+        """
+        Train the model using the preprocessed data and evaluate it.
+
+        Args:
+            X (Any): The features DataFrame.
+            y (Any): The target Series.
+            preprocessor (Any): The preprocessor for scaling.
+        """
+        logger.info("Starting model training and evaluation process")
+
+        try:
+            # Initialize ModelTrainer
+            model_trainer = ModelTrainer(X, y, preprocessor)
+            model_trainer.train()
+
+            # Evaluate the model
+            (auc_val, conf_matrix, class_report), (auc_test, conf_matrix_test, class_report_test) = (
+                model_trainer.evaluate(
+                    model_trainer.X_val_scaled, model_trainer.y_val, model_trainer.X_test_scaled, model_trainer.y_test
+                )
+            )
+
+            # Log evaluation results
+            logger.info("Validation AUC: {}", auc_val)
+            logger.info("\nValidation Confusion Matrix:\n {}", conf_matrix)
+            logger.info("\nValidation Classification Report:\n {}", class_report)
+
+            logger.info("\nTest AUC: {}", auc_test)
+            logger.info("\nTest Confusion Matrix:\n {}", conf_matrix_test)
+            logger.info("\nTest Classification Report:\n {}", class_report_test)
+
+            logger.info("Model training and evaluation process completed successfully")
+        except Exception as e:
+            logger.error("An error occurred during the model training and evaluation: {}", str(e))
+            sys.exit(1)
+
 
 if __name__ == "__main__":
-    # Configure logger
-    logger.remove()
-    logger.add(PIPELINE_LOGS, level="DEBUG", rotation="500 MB")
-    logger.add(sys.stdout, level="DEBUG")
+    # Configure logger using setup_logging
+    setup_logging(PIPELINE_LOGS)
 
     try:
         pipeline = CreditDefaultPipeline(CONFIG, FILEPATH)

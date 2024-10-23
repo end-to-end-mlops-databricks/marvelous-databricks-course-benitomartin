@@ -1,11 +1,12 @@
 import os
-import sys
 from typing import Any, Dict
 
+import numpy as np
 import pandas as pd
-import yaml
 from dotenv import load_dotenv
 from loguru import logger
+
+from credit_default.utils import ConfigValidationError, DataValidationError, TargetConfig, load_config, setup_logging
 
 # Load environment variables
 load_dotenv()
@@ -16,83 +17,143 @@ CONFIG = os.environ["CONFIG"]
 
 
 class DataCleaning:
-    """A class for cleaning and preprocessing credit default data."""
+    """
+    A class for cleaning and preprocessing credit default data.
+
+    Attributes:
+        config (Dict[str, Any]): Configuration dictionary containing preprocessing settings
+        df (pd.DataFrame): DataFrame containing the data to be processed
+        target_config (TargetConfig): Configuration for target variable
+    """
 
     def __init__(self, filepath: str, config: Dict[str, Any]):
         """
         Initializes the DataCleaning class.
 
         Args:
-            filepath (str): The path to the CSV file containing the data.
-            config (dict): The configuration dictionary containing preprocessing settings.
+            filepath (str): Path to the CSV file containing the data
+            config (Dict[str, Any]): Configuration dictionary containing preprocessing settings
+
+        Raises:
+            ConfigValidationError: If configuration is invalid
+            FileNotFoundError: If data file doesn't exist
+            DataValidationError: If data validation fails
         """
+        self._validate_file_exists(filepath)
         self.config = config
-        self.validate_config()
-        self.df = self.load_data(filepath)
-        self.validate_columns()
+        self._validate_and_setup_config()
+        self.df = self._load_data(filepath)
+        self._validate_dataframe()
 
     @staticmethod
-    def load_data(filepath: str) -> pd.DataFrame:
+    def _validate_file_exists(filepath: str) -> None:
+        """Validates that the input file exists."""
+        if not os.path.exists(filepath):
+            logger.error(f"File not found: {filepath}")
+            raise FileNotFoundError(f"The file {filepath} does not exist")
+
+    def _validate_and_setup_config(self) -> None:
         """
-        Loads data from a CSV file.
+        Validates configuration and sets up target configuration.
+
+        Raises:
+            ConfigValidationError: If configuration is invalid
+        """
+        try:
+            logger.info("Validating configuration settings")
+            self._validate_config_structure()
+            self._setup_target_config()
+        except Exception as e:
+            raise ConfigValidationError(f"Configuration validation failed: {str(e)}") from e
+
+    def _validate_config_structure(self) -> None:
+        """Validates the structure of the configuration dictionary."""
+        required_keys = ["columns_to_drop", "target"]
+        missing_keys = [key for key in required_keys if key not in self.config]
+
+        if missing_keys:
+            raise ConfigValidationError(f"Missing required keys: {', '.join(missing_keys)}")
+
+        if not isinstance(self.config["columns_to_drop"], list):
+            raise ConfigValidationError("'columns_to_drop' must be a list")
+
+        if not isinstance(self.config["target"], list) or not self.config["target"]:
+            raise ConfigValidationError("'target' must be a non-empty list")
+
+        if "name" not in self.config["target"][0]:
+            raise ConfigValidationError("Target configuration must contain 'name' key")
+
+    def _setup_target_config(self) -> None:
+        """Sets up target configuration from config dictionary."""
+        self.target_config = TargetConfig(name=self.config["target"][0]["name"])
+
+    @staticmethod
+    def _load_data(filepath: str) -> pd.DataFrame:
+        """
+        Loads and validates the input data.
 
         Args:
-            filepath (str): The path to the CSV file to be loaded.
+            filepath (str): Path to the CSV file
 
         Returns:
-            pd.DataFrame: A DataFrame containing the loaded data.
+            pd.DataFrame: Loaded DataFrame
 
         Raises:
-            FileNotFoundError: If the file does not exist.
-            pd.errors.EmptyDataError: If the file is empty or unreadable.
+            DataValidationError: If data loading or validation fails
         """
-        logger.info(f"Loading data from {filepath}")
-        if not os.path.exists(filepath):
-            logger.error(f"File {filepath} does not exist")
-            raise FileNotFoundError(f"File {filepath} does not exist")
         try:
+            logger.info(f"Loading data from {filepath}")
             df = pd.read_csv(filepath)
-            logger.info("File loaded successfully")
+
+            if df.empty:
+                raise DataValidationError("Loaded DataFrame is empty")
+
             return df
         except pd.errors.EmptyDataError as e:
-            logger.error(f"File is empty or unreadable: {e}")
-            raise
+            raise DataValidationError(f"Failed to load data: {str(e)}") from e
+        except Exception as e:
+            raise DataValidationError(f"Unexpected error loading data: {str(e)}") from e
 
-    def validate_config(self) -> None:
+    def _validate_dataframe(self) -> None:
         """
-        Validates the configuration settings. Checks for the existence of necessary keys
-        like 'columns_to_drop' and 'target' in the config dictionary.
+        Validates the loaded DataFrame structure and content.
 
         Raises:
-            KeyError: If required keys are missing from the config.
+            DataValidationError: If DataFrame validation fails
         """
-        logger.info("Validating configuration settings")
-        required_keys = ["columns_to_drop", "target"]
+        logger.info("Validating DataFrame structure and content")
 
-        missing_keys = [key for key in required_keys if key not in self.config]
-        if missing_keys:
-            logger.error(f"Missing keys in config: {', '.join(missing_keys)}")
-            raise KeyError(f"Missing keys in config: {', '.join(missing_keys)}")
+        # Check for required columns
+        self._validate_columns()
 
-        if not isinstance(self.config["target"], list) or "name" not in self.config["target"][0]:
-            logger.error("Invalid target configuration. Must be a list with 'name' key.")
-            raise KeyError("Invalid target configuration. Must be a list with 'name' key.")
+        # Check for null values
+        null_counts = self.df.isnull().sum()
+        if null_counts.any():
+            logger.warning(f"Found null values:\n{null_counts[null_counts > 0]}")
 
-    def validate_columns(self) -> None:
-        """
-        Validates that the required columns specified in the configuration exist in the DataFrame.
+        # Check data types
+        self._validate_data_types()
 
-        Raises:
-            KeyError: If any column specified in the config does not exist in the data.
-        """
-        logger.info("Validating if required columns exist in the DataFrame")
-        columns_to_check = self.config.get("columns_to_drop", []) + [self.config["target"][0]["name"]]
-
+    def _validate_columns(self) -> None:
+        """Validates that required columns exist in the DataFrame."""
+        columns_to_check = self.config.get("columns_to_drop", []) + [self.target_config.name]
         missing_columns = [col for col in columns_to_check if col not in self.df.columns]
 
         if missing_columns:
-            logger.error(f"Missing columns in the data: {', '.join(missing_columns)}")
-            raise KeyError(f"Missing columns in the data: {', '.join(missing_columns)}")
+            raise DataValidationError(f"Missing required columns: {', '.join(missing_columns)}")
+
+    def _validate_data_types(self) -> None:
+        """Validates data types of key columns."""
+        try:
+            # Ensure target variable is numeric
+            target_col = self.target_config.name
+            if not np.issubdtype(self.df[target_col].dtype, np.number):
+                raise DataValidationError(f"Target column '{target_col}' must be numeric")
+
+            # Add more specific data type validations as needed
+
+        except Exception as e:
+            raise DataValidationError(f"Data type validation failed: {str(e)}") from e
 
     def preprocess_data(self) -> pd.DataFrame:
         """
@@ -100,16 +161,26 @@ class DataCleaning:
 
         Returns:
             pd.DataFrame: The cleaned DataFrame after preprocessing.
+
+        Raises:
+            DataValidationError: If preprocessing fails
         """
-        logger.info("Starting data preprocessing")
+        try:
+            logger.info("Starting data preprocessing")
 
-        self._drop_columns()
-        self._rename_target_column()
-        self._capitalize_columns()
-        self._correct_unknown_values()
+            self._drop_columns()
+            self._rename_target_column()
+            self._capitalize_columns()
+            self._correct_unknown_values()
 
-        logger.info("Data preprocessing completed")
-        return self.df
+            # Validate final dataset
+            self._validate_preprocessed_data()
+
+            logger.info("Data preprocessing completed successfully")
+            return self.df
+
+        except Exception as e:
+            raise DataValidationError(f"Preprocessing failed: {str(e)}") from e
 
     def _drop_columns(self) -> None:
         """Removes specified columns from the DataFrame."""
@@ -119,10 +190,8 @@ class DataCleaning:
 
     def _rename_target_column(self) -> None:
         """Renames the target column."""
-        target_name = self.config["target"][0]["name"]
-        new_target_name = "Default"
-        logger.info(f"Renaming target column '{target_name}' to '{new_target_name}'")
-        self.df = self.df.rename(columns={target_name: new_target_name})
+        logger.info(f"Renaming target column '{self.target_config.name}' to '{self.target_config.new_name}'")
+        self.df = self.df.rename(columns={self.target_config.name: self.target_config.new_name})
 
     def _capitalize_columns(self) -> None:
         """Capitalizes column names."""
@@ -131,67 +200,81 @@ class DataCleaning:
 
     def _correct_unknown_values(self) -> None:
         """Corrects unknown values in specified columns."""
-        logger.info("Correcting unknown values for Education, Marriage and Pay")
+        logger.info("Correcting unknown values for Education, Marriage and Pay columns")
 
-        self._replace_values("Education", {0: 4, 5: 4, 6: 4})
-        self._replace_values("Marriage", {0: 3})
+        corrections = {"Education": {0: 4, 5: 4, 6: 4}, "Marriage": {0: 3}, "Pay": {-1: 0, -2: 0}}
 
-        pay_columns = ["Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6"]
-        for col in pay_columns:
-            self._replace_values(col, {-1: 0, -2: 0})
+        self._apply_corrections(corrections)
+
+    def _apply_corrections(self, corrections: Dict[str, Dict[Any, Any]]) -> None:
+        """
+        Applies value corrections to specified columns.
+
+        Args:
+            corrections: Dictionary mapping column prefixes to value replacement dictionaries
+        """
+        for col_prefix, replacement_dict in corrections.items():
+            columns = [col for col in self.df.columns if col.startswith(col_prefix)]
+            for col in columns:
+                self._replace_values(col, replacement_dict)
 
     def _replace_values(self, column: str, replacement_dict: Dict[Any, Any]) -> None:
         """
         Replaces values in a specified column based on a replacement dictionary.
 
         Args:
-            column (str): The name of the column to perform replacements on.
-            replacement_dict (Dict[Any, Any]): A dictionary mapping old values to new values.
+            column: Column name to perform replacements on
+            replacement_dict: Dictionary mapping old values to new values
         """
         if column in self.df.columns:
             self.df[column] = self.df[column].replace(replacement_dict)
         else:
-            logger.warning(f"'{column}' column not found in the data")
+            logger.warning(f"Column '{column}' not found in the data")
+
+    def _validate_preprocessed_data(self) -> None:
+        """
+        Validates the preprocessed data before returning.
+
+        Raises:
+            DataValidationError: If validation fails
+        """
+        if self.df.empty:
+            raise DataValidationError("Preprocessing resulted in empty DataFrame")
+
+        # Validate target column
+        target_col = self.target_config.new_name
+        if target_col not in self.df.columns:
+            raise DataValidationError(f"Target column '{target_col}' missing after preprocessing")
+
+        # Check for unexpected null values
+        if self.df.isnull().any().any():
+            raise DataValidationError("Unexpected null values found after preprocessing")
 
 
 if __name__ == "__main__":
-    # # Configure logger
-    # Remove the default logger
-    logger.remove()
-
-    # Add logger to file with rotation
-    logger.add(CLEANING_LOGS, level="DEBUG", rotation="500 MB")
-
-    # Add logger to console (stdout) with DEBUG level
-    logger.add(sys.stdout, level="DEBUG")
-
-    # Load configuration from YAML file
-    with open(CONFIG, "r") as f:
-        config = yaml.safe_load(f)
-
-    logger.info(f"Test configuration: {config}")
-
-    # Data path
-    filepath = FILEPATH
-    logger.info(f"Data filepath: {filepath}")
+    # Set up logging
+    setup_logging(CLEANING_LOGS)
 
     try:
-        # Create an instance of DataCleaning
-        data_cleaner = DataCleaning(filepath, config)
-        logger.info("DataCleaning instance created successfully")
+        # Load configuration
+        config = load_config(CONFIG)
+        logger.info(f"Loaded configuration from {config}")
 
-        # Preprocess the data
+        # Create and run data cleaner
+        data_cleaner = DataCleaning(FILEPATH, config)
         cleaned_data = data_cleaner.preprocess_data()
-        logger.info("Data preprocessing completed")
 
-        # Log the first few rows of the cleaned data
-        logger.info("First few rows of cleaned data\n" + cleaned_data.head().to_string())
+        # Log results
+        logger.info("Data cleaning completed successfully:")
+        logger.info(f"Final data shape: {cleaned_data.shape}")
+        logger.info(f"Final columns: {cleaned_data.columns.tolist()}")
+        logger.info(f"Sample of cleaned data:\n{cleaned_data.head().to_string()}")
 
-        # Log basic information about the cleaned data
-        logger.info(f"Cleaned data shape: {cleaned_data.shape}")
-        logger.info(f"Cleaned data columns: {cleaned_data.columns.tolist()}")
-
+    except (ConfigValidationError, DataValidationError, FileNotFoundError) as e:
+        logger.error(f"Data cleaning failed: {str(e)}")
+        raise
     except Exception as e:
-        logger.error(f"An error occurred during the test: {str(e)}")
+        logger.error(f"Unexpected error: {str(e)}")
+        raise
 
-    logger.info("DataCleaning test completed")
+    logger.info("Data cleaning script completed successfully")
