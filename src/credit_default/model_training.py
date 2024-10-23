@@ -36,7 +36,7 @@ class ModelTrainer:
         y_test (pd.Series): The test target Series.
     """
 
-    def __init__(self, X: Any, y: Any, preprocessor: Any) -> None:
+    def __init__(self, X: Any, y: Any, preprocessor: Any, learning_rate: float, random_state: int) -> None:
         """
         Initializes the ModelTrainer class.
 
@@ -48,7 +48,7 @@ class ModelTrainer:
         self.X = X
         self.y = y
         self.preprocessor = preprocessor
-        self.model = LGBMClassifier(objective="binary", learning_rate=0.05)
+        self.model = LGBMClassifier(objective="binary", learning_rate=learning_rate)
 
         # Initialize placeholders for scaled features and target variables
         self.X_train_scaled = None
@@ -57,6 +57,7 @@ class ModelTrainer:
         self.y_train = None
         self.y_val = None
         self.y_test = None
+        self.random_state = random_state
 
     def train(self) -> None:
         """
@@ -67,10 +68,10 @@ class ModelTrainer:
         try:
             # Split the data into training, validation, and test sets
             X_train, X_temp, y_train, y_temp = train_test_split(
-                self.X, self.y, test_size=0.30, random_state=42, stratify=self.y
+                self.X, self.y, test_size=0.30, random_state=self.random_state, stratify=self.y
             )
             X_val, X_test, y_val, y_test = train_test_split(
-                X_temp, y_temp, test_size=0.5, random_state=42, stratify=y_temp
+                X_temp, y_temp, test_size=0.5, random_state=self.random_state, stratify=y_temp
             )
 
             # Store the target variables
@@ -155,12 +156,16 @@ if __name__ == "__main__":
         # Load configuration from YAML file
         config = load_config(CONFIG)
 
+        # Extract parameters from the config
+        learning_rate = config["parameters"]["learning_rate"]
+        random_state = config["parameters"]["random_state"]
+
         # Initialize DataPreprocessor
         preprocessor_instance = DataPreprocessor(FILEPATH, config)
         X, y, preprocessor = preprocessor_instance.get_processed_data()
 
         # Initialize ModelTrainer and train the model
-        model_trainer = ModelTrainer(X, y, preprocessor)
+        model_trainer = ModelTrainer(X, y, preprocessor, learning_rate, random_state)
         model_trainer.train()
 
         # Evaluate the model
