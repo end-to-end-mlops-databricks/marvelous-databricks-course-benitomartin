@@ -33,12 +33,12 @@ uv lock
 # Authentication
 databricks auth login --configure-cluster --host <workspace-url>
 
-Profiles
+# Profiles
 databricks auth profiles
 cat ~/.databrickscfg
 
 # Root Dir
-databricks fs ls dbfs:/s
+databricks fs ls dbfs:/
 ```
 
 ### Catalog Creation
@@ -71,7 +71,7 @@ databricks volumes create maven default packages MANAGED
 databricks fs cp dist/mlops_with_databricks-0.0.1-py3-none-any.whl dbfs:/Volumes/maven/default/packages
 
 # Overwrite Package
-databricks fs cp dist/credit_default_databricks-0.0.5-py3-none-any.whl dbfs:/Volumes/maven/default/packages --overwrite
+databricks fs cp dist/credit_default_databricks-0.0.7-py3-none-any.whl dbfs:/Volumes/maven/default/packages --overwrite
 ```
 
 ## Data
@@ -83,6 +83,7 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 ## Second PR - Branch: mlflow
 
 - Added hatchling
+- Activated editabel mode: uv pip install -e .
 - Removed "src" imports
 - Improved src code, added utils and model training
 - Added logs to .gitignore

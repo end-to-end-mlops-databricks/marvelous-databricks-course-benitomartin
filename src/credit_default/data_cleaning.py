@@ -6,7 +6,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from loguru import logger
 
-from credit_default.utils import ConfigValidationError, DataValidationError, TargetConfig, load_config, setup_logging
+from credit_default.utils import TargetConfig, load_config, setup_logging
 
 # Load environment variables
 load_dotenv()
@@ -35,9 +35,8 @@ class DataCleaning:
             config (Dict[str, Any]): Configuration dictionary containing preprocessing settings
 
         Raises:
-            ConfigValidationError: If configuration is invalid
             FileNotFoundError: If data file doesn't exist
-            DataValidationError: If data validation fails
+            Exception: If data cleaning fails
         """
         self._validate_file_exists(filepath)
         self.config = config
@@ -47,7 +46,15 @@ class DataCleaning:
 
     @staticmethod
     def _validate_file_exists(filepath: str) -> None:
-        """Validates that the input file exists."""
+        """
+        Validates that the input file exists.
+
+        Args:
+            filepath (str): Path to the CSV file containing the data
+
+        Raises:
+            FileNotFoundError: If file does not exist
+        """
         if not os.path.exists(filepath):
             logger.error(f"File not found: {filepath}")
             raise FileNotFoundError(f"The file {filepath} does not exist")
@@ -57,14 +64,14 @@ class DataCleaning:
         Validates configuration and sets up target configuration.
 
         Raises:
-            ConfigValidationError: If configuration is invalid
+            Exception: If data cleaning fails
         """
         try:
             logger.info("Validating configuration settings")
             self._validate_config_structure()
             self._setup_target_config()
         except Exception as e:
-            raise ConfigValidationError(f"Configuration validation failed: {str(e)}") from e
+            raise Exception(f"Configuration validation failed: {str(e)}") from e
 
     def _validate_config_structure(self) -> None:
         """Validates the structure of the configuration dictionary."""
@@ -72,16 +79,16 @@ class DataCleaning:
         missing_keys = [key for key in required_keys if key not in self.config]
 
         if missing_keys:
-            raise ConfigValidationError(f"Missing required keys: {', '.join(missing_keys)}")
+            raise Exception(f"Missing required keys: {', '.join(missing_keys)}")
 
         if not isinstance(self.config["columns_to_drop"], list):
-            raise ConfigValidationError("'columns_to_drop' must be a list")
+            raise Exception("'columns_to_drop' must be a list")
 
         if not isinstance(self.config["target"], list) or not self.config["target"]:
-            raise ConfigValidationError("'target' must be a non-empty list")
+            raise Exception("'target' must be a non-empty list")
 
         if "name" not in self.config["target"][0]:
-            raise ConfigValidationError("Target configuration must contain 'name' key")
+            raise Exception("Target configuration must contain 'name' key")
 
     def _setup_target_config(self) -> None:
         """Sets up target configuration from config dictionary."""
@@ -99,27 +106,27 @@ class DataCleaning:
             pd.DataFrame: Loaded DataFrame
 
         Raises:
-            DataValidationError: If data loading or validation fails
+            Exception: If data loading or validation fails
         """
         try:
             logger.info(f"Loading data from {filepath}")
             df = pd.read_csv(filepath)
 
             if df.empty:
-                raise DataValidationError("Loaded DataFrame is empty")
+                raise Exception("Loaded DataFrame is empty")
 
             return df
         except pd.errors.EmptyDataError as e:
-            raise DataValidationError(f"Failed to load data: {str(e)}") from e
+            raise Exception(f"Failed to load data: {str(e)}") from e
         except Exception as e:
-            raise DataValidationError(f"Unexpected error loading data: {str(e)}") from e
+            raise Exception(f"Unexpected error loading data: {str(e)}") from e
 
     def _validate_dataframe(self) -> None:
         """
         Validates the loaded DataFrame structure and content.
 
         Raises:
-            DataValidationError: If DataFrame validation fails
+            Exception: If DataFrame validation fails
         """
         logger.info("Validating DataFrame structure and content")
 
@@ -135,25 +142,32 @@ class DataCleaning:
         self._validate_data_types()
 
     def _validate_columns(self) -> None:
-        """Validates that required columns exist in the DataFrame."""
+        """
+        Validates that required columns exist in the DataFrame.
+
+        Raises:
+            Exception: If DataFrame validation fails
+        """
         columns_to_check = self.config.get("columns_to_drop", []) + [self.target_config.name]
         missing_columns = [col for col in columns_to_check if col not in self.df.columns]
 
         if missing_columns:
-            raise DataValidationError(f"Missing required columns: {', '.join(missing_columns)}")
+            raise Exception(f"Missing required columns: {', '.join(missing_columns)}")
 
     def _validate_data_types(self) -> None:
-        """Validates data types of key columns."""
+        """Validates data types of key columns.
+
+        Raises:
+            Exception: If DataFrame validation fails
+        """
         try:
             # Ensure target variable is numeric
             target_col = self.target_config.name
             if not np.issubdtype(self.df[target_col].dtype, np.number):
-                raise DataValidationError(f"Target column '{target_col}' must be numeric")
-
-            # Add more specific data type validations as needed
+                raise Exception(f"Target column '{target_col}' must be numeric")
 
         except Exception as e:
-            raise DataValidationError(f"Data type validation failed: {str(e)}") from e
+            raise Exception(f"Data type validation failed: {str(e)}") from e
 
     def preprocess_data(self) -> pd.DataFrame:
         """
@@ -163,7 +177,7 @@ class DataCleaning:
             pd.DataFrame: The cleaned DataFrame after preprocessing.
 
         Raises:
-            DataValidationError: If preprocessing fails
+            Exception: If preprocessing fails
         """
         try:
             logger.info("Starting data preprocessing")
@@ -180,7 +194,7 @@ class DataCleaning:
             return self.df
 
         except Exception as e:
-            raise DataValidationError(f"Preprocessing failed: {str(e)}") from e
+            raise Exception(f"Preprocessing failed: {str(e)}") from e
 
     def _drop_columns(self) -> None:
         """Removes specified columns from the DataFrame."""
@@ -236,19 +250,19 @@ class DataCleaning:
         Validates the preprocessed data before returning.
 
         Raises:
-            DataValidationError: If validation fails
+            Exception: If validation fails
         """
         if self.df.empty:
-            raise DataValidationError("Preprocessing resulted in empty DataFrame")
+            raise Exception("Preprocessing resulted in empty DataFrame")
 
         # Validate target column
         target_col = self.target_config.new_name
         if target_col not in self.df.columns:
-            raise DataValidationError(f"Target column '{target_col}' missing after preprocessing")
+            raise Exception(f"Target column '{target_col}' missing after preprocessing")
 
         # Check for unexpected null values
         if self.df.isnull().any().any():
-            raise DataValidationError("Unexpected null values found after preprocessing")
+            raise Exception("Unexpected null values found after preprocessing")
 
 
 if __name__ == "__main__":
@@ -270,7 +284,7 @@ if __name__ == "__main__":
         logger.info(f"Final columns: {cleaned_data.columns.tolist()}")
         logger.info(f"Sample of cleaned data:\n{cleaned_data.head().to_string()}")
 
-    except (ConfigValidationError, DataValidationError, FileNotFoundError) as e:
+    except ValueError as e:
         logger.error(f"Data cleaning failed: {str(e)}")
         raise
     except Exception as e:

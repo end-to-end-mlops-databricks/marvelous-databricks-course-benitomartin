@@ -1,0 +1,15 @@
+artifact_uri: file:///home/bmartinc80/00_Projects/01_ML/marvelous-databricks-course-benitomartin/mlruns/0/78b488039b3448c99c35fe768f199061/artifacts
+end_time: 1729772128885
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 78b488039b3448c99c35fe768f199061
+run_name: skittish-carp-212
+run_uuid: 78b488039b3448c99c35fe768f199061
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1729772126651
+status: 3
+tags: []
+user_id: bmartinc80

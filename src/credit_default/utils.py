@@ -20,18 +20,6 @@ class TargetConfig:
     new_name: str = "Default"
 
 
-class DataValidationError(Exception):
-    """Custom exception for data validation errors."""
-
-    pass
-
-
-class ConfigValidationError(Exception):
-    """Custom exception for configuration validation errors."""
-
-    pass
-
-
 def setup_logging(log_file: str, log_level: str = "DEBUG") -> None:
     """
     Sets up logging configuration with rotation.

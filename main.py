@@ -87,7 +87,7 @@ class CreditDefaultPipeline:
             model_trainer.train()
 
             # Evaluate the model
-            (auc_val, conf_matrix, class_report), (auc_test, conf_matrix_test, class_report_test) = (
+            (auc_val, conf_matrix_val, class_report_val), (auc_test, conf_matrix_test, class_report_test) = (
                 model_trainer.evaluate(
                     model_trainer.X_val_scaled, model_trainer.y_val, model_trainer.X_test_scaled, model_trainer.y_test
                 )
@@ -95,8 +95,8 @@ class CreditDefaultPipeline:
 
             # Log evaluation results
             logger.info("Validation AUC: {}", auc_val)
-            logger.info("\nValidation Confusion Matrix:\n {}", conf_matrix)
-            logger.info("\nValidation Classification Report:\n {}", class_report)
+            logger.info("\nValidation Confusion Matrix:\n {}", conf_matrix_val)
+            logger.info("\nValidation Classification Report:\n {}", class_report_val)
 
             logger.info("\nTest AUC: {}", auc_test)
             logger.info("\nTest Confusion Matrix:\n {}", conf_matrix_test)
