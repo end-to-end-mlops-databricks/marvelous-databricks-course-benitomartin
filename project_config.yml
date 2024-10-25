@@ -4,6 +4,7 @@ schema_name: default
 parameters:
   learning_rate: 0.05
   random_state: 42
+  force_col_wise: true
 
 num_features:
   - name: LIMIT_BAL

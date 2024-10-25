@@ -98,3 +98,6 @@ dmypy.json
 
 .databricks
 logs/
+wheel/
+notebooks/mlruns/
+notebooks/model_version.json

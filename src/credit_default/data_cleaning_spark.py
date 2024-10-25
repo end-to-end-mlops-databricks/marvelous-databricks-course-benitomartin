@@ -190,6 +190,8 @@ class DataCleaning:
             self._rename_target_column()
             self._capitalize_columns()
             self._correct_unknown_values()
+            self._convert_int_to_float()
+            self._impute_missing_values()
 
             # Validate final dataset
             self._validate_preprocessed_data()
@@ -248,6 +250,17 @@ class DataCleaning:
             self.df[column] = self.df[column].replace(replacement_dict)
         else:
             logger.warning(f"Column '{column}' not found in the data")
+
+    def _convert_int_to_float(self) -> None:
+        """Converts integer columns to float to avoid schema enforcement errors with nulls."""
+        logger.info("Converting integer columns to float (due to spark warning)")
+        for col in self.df.select_dtypes(include="integer").columns:
+            self.df[col] = self.df[col].astype(float)
+
+    def _impute_missing_values(self) -> None:
+        """Imputes missing values to prevent issues at inference."""
+        logger.info("Imputing missing values")
+        self.df.fillna(self.df.mean(), inplace=True)
 
     def _validate_preprocessed_data(self) -> None:
         """
