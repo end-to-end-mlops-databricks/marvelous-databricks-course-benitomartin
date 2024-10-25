@@ -101,3 +101,4 @@ logs/
 wheel/
 notebooks/mlruns/
 notebooks/model_version.json
+notebooks/test_scripts/
