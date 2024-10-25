@@ -88,6 +88,8 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Improved src code, added utils and model training
 - Added logs to .gitignore
 - Added training to main
+- Added .gitattributes
+- Added mlflow notebooks (basec, custom and feature store)
 
 
 ## First PR - Branch: setup
