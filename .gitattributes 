@@ -6,6 +6,7 @@
 
 *.ipynb eol=lf
 *.ipynb linguist-documentation
+*.ipynb linguist-language=Jupyter Notebook
 
 *.pyc linguist-generated
 __pycache__/ linguist-generated
