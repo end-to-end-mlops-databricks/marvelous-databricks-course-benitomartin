@@ -1,0 +1,11 @@
+# .gitattributes
+
+* text=auto
+
+*.py text
+
+*.ipynb eol=lf
+*.ipynb linguist-documentation
+
+*.pyc linguist-generated
+__pycache__/ linguist-generated
