@@ -208,4 +208,3 @@ class DataCleaning:
 #         raise
 
 #     logger.info("Data cleaning script completed successfully")
-# COMMAND ----------
