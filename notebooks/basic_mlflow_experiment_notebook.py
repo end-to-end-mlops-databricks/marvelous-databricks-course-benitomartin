@@ -31,9 +31,9 @@ mlflow.set_registry_uri(f"databricks-uc://{PROFILE}")
 # COMMAND ----------
 # Load configuration from YAML file
 config = load_config(CONFIG_DATABRICKS)
-catalog_name = config["catalog_name"]
-schema_name = config["schema_name"]
-parameters = config["parameters"]
+catalog_name = config.catalog_name
+schema_name = config.schema_name
+parameters = config.parameters
 
 
 # COMMAND ----------
@@ -55,21 +55,10 @@ X_train.head()
 
 # COMMAND ----------
 
-features_robust = [
-    "Limit_bal",
-    "Bill_amt1",
-    "Bill_amt2",
-    "Bill_amt3",
-    "Bill_amt4",
-    "Bill_amt5",
-    "Bill_amt6",
-    "Pay_amt1",
-    "Pay_amt2",
-    "Pay_amt3",
-    "Pay_amt4",
-    "Pay_amt5",
-    "Pay_amt6",
-]
+features_robust = config.features.robust
+print(features_robust)
+# COMMAND ----------
+
 
 preprocessor = ColumnTransformer(
     transformers=[("robust_scaler", RobustScaler(), features_robust)],
@@ -119,5 +108,3 @@ model_version = mlflow.register_model(
 # Optionally, save the model version information
 with open("model_version.json", "w") as json_file:
     json.dump(model_version.__dict__, json_file, indent=4)
-
-# COMMAND ----------

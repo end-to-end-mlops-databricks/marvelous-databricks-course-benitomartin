@@ -37,8 +37,8 @@ class CreditDefaultPipeline:
         self.config_path: str = config_path
         self.data_path: str = data_path
         self.config: Dict = load_config(self.config_path)
-        self.learning_rate = self.config["parameters"]["learning_rate"]
-        self.random_state = self.config["parameters"]["random_state"]
+        self.learning_rate = self.config.parameters["learning_rate"]
+        self.random_state = self.config.parameters["random_state"]
 
     def run(self) -> None:
         """
@@ -84,13 +84,12 @@ class CreditDefaultPipeline:
             model_trainer = ModelTrainer(
                 X, y, preprocessor, learning_rate=self.learning_rate, random_state=self.random_state
             )
+
             model_trainer.train()
 
             # Evaluate the model
             (auc_val, conf_matrix_val, class_report_val), (auc_test, conf_matrix_test, class_report_test) = (
-                model_trainer.evaluate(
-                    model_trainer.X_val_scaled, model_trainer.y_val, model_trainer.X_test_scaled, model_trainer.y_test
-                )
+                model_trainer.evaluate()
             )
 
             # Log evaluation results

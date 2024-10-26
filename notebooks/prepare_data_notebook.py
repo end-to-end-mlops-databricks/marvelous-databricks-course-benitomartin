@@ -13,12 +13,18 @@ spark = SparkSession.builder.getOrCreate()
 # Load environment variables
 load_dotenv()
 
-FILEPATH_DATABRICKS = os.environ["FILEPATH_DATABRICKS"]
+# FILEPATH_DATABRICKS = os.environ["FILEPATH_DATABRICKS"]
+FILEPATH_DATABRICKS = "dbfs:/Volumes/maven/default/data/data.csv"
 PREPROCESSING_LOGS = os.environ["PREPROCESSING_LOGS"]
 # CONFIG = os.environ["CONFIG"]
 CONFIG_DATABRICKS = os.environ["CONFIG_DATABRICKS"]
 print(CONFIG_DATABRICKS)
 print(FILEPATH_DATABRICKS)
+
+# # COMMAND ----------
+# from IPython.display import display
+
+# display(spark.read.csv(FILEPATH_DATABRICKS, header=True, inferSchema=True))
 
 # COMMAND ----------
 
@@ -47,5 +53,3 @@ except Exception as e:
     logger.error(f"An error occurred: {str(e)}")
 
     logger.info("DataPreprocessor script completed")
-
-# COMMAND ----------

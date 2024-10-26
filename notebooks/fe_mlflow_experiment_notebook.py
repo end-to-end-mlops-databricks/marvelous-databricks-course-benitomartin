@@ -128,21 +128,8 @@ y_train = training_df["Default"]
 X_test = test_set[columns]
 y_test = test_set["Default"]
 
-features_robust = [
-    "Limit_bal",
-    "Bill_amt1",
-    "Bill_amt2",
-    "Bill_amt3",
-    "Bill_amt4",
-    "Bill_amt5",
-    "Bill_amt6",
-    "Pay_amt1",
-    "Pay_amt2",
-    "Pay_amt3",
-    "Pay_amt4",
-    "Pay_amt5",
-    "Pay_amt6",
-]
+features_robust = config.features.robust
+
 
 # Setup preprocessing and model pipeline
 preprocessor = ColumnTransformer(

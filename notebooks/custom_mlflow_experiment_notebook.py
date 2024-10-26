@@ -29,9 +29,9 @@ client = MlflowClient()
 # COMMAND ----------
 # Load configuration from YAML file
 config = load_config(CONFIG_DATABRICKS)
-catalog_name = config["catalog_name"]
-schema_name = config["schema_name"]
-parameters = config["parameters"]
+catalog_name = config.catalog_name
+schema_name = config.schema_name
+parameters = config.parameters
 
 
 # COMMAND ----------
@@ -107,7 +107,7 @@ with mlflow.start_run(tags={"branch": "mlflow"}) as run:
     mlflow.pyfunc.log_model(
         python_model=wrapped_model,
         artifact_path="pyfunc_credit_default_model",
-        code_paths=["wheel/credit_default_databricks-0.0.7-py3-none-any.whl"],
+        code_paths=["wheel/credit_default_databricks-0.0.8-py3-none-any.whl"],
         signature=signature,
     )
 

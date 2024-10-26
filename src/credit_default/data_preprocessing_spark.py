@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import RobustScaler
 
 from credit_default.data_cleaning_spark import DataCleaning
+from credit_default.utils import Config
 
 # Load environment variables
 load_dotenv()
@@ -35,16 +36,16 @@ class DataPreprocessor:
         preprocessor (ColumnTransformer): ColumnTransformer for scaling the features.
     """
 
-    def __init__(self, filepath: str, config: dict, spark: SparkSession):
+    def __init__(self, filepath: str, config: Config, spark: SparkSession):
         """
         Initializes the DataPreprocessor class.
 
         Args:
             filepath (str): The path to the CSV file containing the data.
-            config (dict): The configuration dictionary containing preprocessing settings.
+            config (Config): The configuration model containing preprocessing settings.
         """
-        self.catalog_name = config["catalog_name"]
-        self.schema_name = config["schema_name"]
+        self.catalog_name = config.catalog_name
+        self.schema_name = config.schema_name
         self.spark = spark
 
         try:
@@ -54,26 +55,12 @@ class DataPreprocessor:
             self.cleaned_data = self.data_cleaning.preprocess_data()
             logger.info("Data cleaning process completed")
 
-            # Define robust features for scaling
-            self.features_robust = [
-                "Limit_bal",
-                "Bill_amt1",
-                "Bill_amt2",
-                "Bill_amt3",
-                "Bill_amt4",
-                "Bill_amt5",
-                "Bill_amt6",
-                "Pay_amt1",
-                "Pay_amt2",
-                "Pay_amt3",
-                "Pay_amt4",
-                "Pay_amt5",
-                "Pay_amt6",
-            ]
+            # Define robust features for scaling from config
+            self.features_robust = config.features.robust
 
             # Define features and target
-            self.X = self.cleaned_data.drop(columns=["Default"])
-            self.y = self.cleaned_data["Default"]
+            self.X = self.cleaned_data.drop(columns=[target.new_name for target in config.target])
+            self.y = self.cleaned_data[config.target[0].new_name]
 
             # Set up the ColumnTransformer for scaling
             logger.info("Setting up ColumnTransformer for scaling")
@@ -140,18 +127,19 @@ class DataPreprocessor:
 
 
 # if __name__ == "__main__":
-
 #     # Configure logger using setup_logging
 #     setup_logging(PREPROCESSING_LOGS)  # Set up logging with the log file path
 
 #     # Load configuration from YAML file
-#     config = load_config(CONFIG)
+#     config = load_config(CONFIG_DATABRICKS)  # Returns Config instance
 
 #     # Test the DataPreprocessor class
 #     try:
 #         logger.info(f"Initializing DataPreprocessor with config: {config}")
 #         preprocessor = DataPreprocessor(FILEPATH_DATABRICKS, config)
 #         X, y, preprocessor_model = preprocessor.get_processed_data()
+
+#         logger.info(f"Feature columns in X: {X.columns.tolist()}")
 
 #         # Log shapes of processed data
 #         logger.info(f"Data preprocessing completed. Shape of X: {X.shape}, Shape of y: {y.shape}")

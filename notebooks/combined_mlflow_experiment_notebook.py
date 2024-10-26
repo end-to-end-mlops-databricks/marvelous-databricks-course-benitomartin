@@ -59,22 +59,8 @@ def load_data(spark, catalog_name, schema_name):
     return X_train, y_train, X_test, y_test, train_set_spark
 
 
-def create_pipeline(parameters):
-    features_robust = [
-        "Limit_bal",
-        "Bill_amt1",
-        "Bill_amt2",
-        "Bill_amt3",
-        "Bill_amt4",
-        "Bill_amt5",
-        "Bill_amt6",
-        "Pay_amt1",
-        "Pay_amt2",
-        "Pay_amt3",
-        "Pay_amt4",
-        "Pay_amt5",
-        "Pay_amt6",
-    ]
+def create_pipeline(config, parameters):
+    features_robust = config.features.robust
 
     preprocessor = ColumnTransformer(
         transformers=[("robust_scaler", RobustScaler(), features_robust)], remainder="passthrough"
@@ -87,9 +73,9 @@ def main():
     # Setup
     spark, CONFIG_DATABRICKS = setup_environment()
     config = load_config(CONFIG_DATABRICKS)
-    catalog_name = config["catalog_name"]
-    schema_name = config["schema_name"]
-    parameters = config["parameters"]
+    catalog_name = config.catalog_name
+    schema_name = config.schema_name
+    parameters = config.parameters
     client = MlflowClient()
 
     # Load data
@@ -102,7 +88,7 @@ def main():
         run_id = run.info.run_id
 
         # Train the model
-        pipeline = create_pipeline(parameters)
+        pipeline = create_pipeline(config, parameters)
         pipeline.fit(X_train, y_train)
         y_pred = pipeline.predict(X_test)
 
@@ -155,4 +141,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 # COMMAND ----------

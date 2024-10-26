@@ -1,6 +1,6 @@
 [project]
 name = "credit-default-databricks"
-version = "0.0.7"                                               # New version
+version = "0.0.8"                                               # New version
 description = "MLOps Project with Databricks: Credit Default Dataset"
 keywords = ["MLOps", "Databricks", "Machine Learning"]
 authors = [{ name = "Benito Martin"}]
@@ -19,8 +19,9 @@ dependencies = ["lightgbm>=4.5.0, <5",
                 "databricks-feature-engineering>=0.6, <1",
                 "imbalanced-learn>=0.11.0, <1",                # Added imbalanced-learn
                 "loguru>=0.6.0, <1",                           # Added loguru
-                "pre-commit>=2.20.0, <3"                       # Added pre-commit
-            ]
+                "pre-commit>=2.20.0, <3",                      # Added pre-commit
+                "pydantic==2.9.0, <3"                          # Added pydantic (v 0.0.8)
+                ]
 
 [project.optional-dependencies]
 dev = ["databricks-connect>=15.4.1, <16",
