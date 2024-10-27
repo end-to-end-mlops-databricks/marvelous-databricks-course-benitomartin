@@ -32,7 +32,7 @@ jobs:
       - name: Activate virtual environment and install dependencies
         run: |
           source .venv/bin/activate
-          uv sync
+          uv sync --all-extras
 
       - name: Load environment variables
         run: |
@@ -41,6 +41,6 @@ jobs:
 
       - name: Run pre-commit checks
         run: |
-          # source .venv/bin/activate
-          uv pip install pre-commit
-          uv pip pre-commit run --all-files
+          source .venv/bin/activate
+          pre-commit install
+          pre-commit run --all-files
