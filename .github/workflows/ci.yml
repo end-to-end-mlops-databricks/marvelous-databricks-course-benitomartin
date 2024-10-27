@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  # push:
-  #   branches:
-  #     - mlflow  # Trigger on push to the 'setup' branch
+  push:
+    branches:
+      - mlflow  # Trigger on push to the 'mlflow' branch
 
   pull_request:
     branches:
