@@ -2,15 +2,15 @@ import os
 
 import pandas as pd
 import pytest
-import yaml
 from dotenv import load_dotenv
 
 from src.credit_default.data_cleaning import DataCleaning
+from src.credit_default.utils import load_config
 
 # Load environment variables
 load_dotenv()
 FILEPATH = os.environ["FILEPATH"]
-CONFIG = os.environ["CONFIG"]
+CONFIG_PATH = os.environ["CONFIG"]
 
 
 @pytest.fixture
@@ -22,9 +22,7 @@ def real_data():
 @pytest.fixture
 def config():
     """Load configuration from the YAML file for testing."""
-    with open(CONFIG, "r") as f:
-        config_data = yaml.safe_load(f)
-    return config_data
+    return load_config(CONFIG_PATH)
 
 
 def test_load_data(real_data, config):
@@ -33,7 +31,7 @@ def test_load_data(real_data, config):
     assert data_cleaning.df.equals(real_data)
 
 
-def test_preprocess_data(real_data, config):
+def test_preprocess_data(config):
     """Test the data preprocessing steps with real data."""
     data_cleaning = DataCleaning(FILEPATH, config)
     cleaned_df = data_cleaning.preprocess_data()

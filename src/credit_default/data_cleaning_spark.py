@@ -1,19 +1,22 @@
+## Databricks notebook source
 import os
 
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from loguru import logger
-from pydantic import ValidationError
+from pyspark.sql import SparkSession
 
-from credit_default.utils import Config, Target, load_config, setup_logging
+from credit_default.utils import Config, Target
 
 # Load environment variables
 load_dotenv()
 
-FILEPATH = os.environ["FILEPATH"]
+spark = SparkSession.builder.getOrCreate()
+
+FILEPATH_DATABRICKS = os.environ["FILEPATH_DATABRICKS"]
 CLEANING_LOGS = os.environ["CLEANING_LOGS"]
-CONFIG = os.environ["CONFIG"]
+CONFIG_DATABRICKS = os.environ["CONFIG_DATABRICKS"]
 
 
 class DataCleaning:
@@ -26,7 +29,7 @@ class DataCleaning:
         target_config (Target): Configuration for target variable
     """
 
-    def __init__(self, filepath: str, config: Config):
+    def __init__(self, filepath: str, config: Config, spark: SparkSession):
         """
         Initializes the DataCleaning class.
 
@@ -35,29 +38,13 @@ class DataCleaning:
             config (Config): Configuration model containing preprocessing settings
 
         Raises:
-            FileNotFoundError: If data file doesn't exist
             Exception: If data cleaning fails
         """
-        self._validate_file_exists(filepath)
         self.config = config
+        self.spark = spark
         self.df = self._load_data(filepath)
         self._setup_target_config()
         self._validate_dataframe()
-
-    @staticmethod
-    def _validate_file_exists(filepath: str) -> None:
-        """
-        Validates that the input file exists.
-
-        Args:
-            filepath (str): Path to the CSV file containing the data
-
-        Raises:
-            FileNotFoundError: If file does not exist
-        """
-        if not os.path.exists(filepath):
-            logger.error(f"File not found: {filepath}")
-            raise FileNotFoundError(f"The file {filepath} does not exist")
 
     def _setup_target_config(self) -> None:
         """Sets up target configuration from config."""
@@ -80,7 +67,9 @@ class DataCleaning:
         """
         try:
             logger.info(f"Loading data from {filepath}")
-            df = pd.read_csv(filepath)
+
+            df = spark.read.csv(FILEPATH_DATABRICKS, header=True, inferSchema=True).toPandas()
+
             if df.empty:
                 raise Exception("Loaded DataFrame is empty")
             return df
@@ -136,6 +125,7 @@ class DataCleaning:
             self._drop_columns()
             self._rename_and_capitalize_columns()
             self._apply_value_corrections()
+            self._convert_int_to_float()
             self._validate_preprocessed_data()
             logger.info("Data preprocessing completed successfully")
             return self.df
@@ -156,6 +146,12 @@ class DataCleaning:
         self.df.rename(columns={self.target_config.name: self.target_config.new_name}, inplace=True)
         self.df.columns = [col.capitalize() if col else col for col in self.df.columns]
         logger.info("Renamed and capitalized columns")
+
+    def _convert_int_to_float(self) -> None:
+        """Converts integer columns to float to avoid schema enforcement errors with nulls."""
+        logger.info("Converting integer columns to float (due to spark warning)")
+        for col in self.df.select_dtypes(include="integer").columns:
+            self.df[col] = self.df[col].astype(float)
 
     def _apply_value_corrections(self) -> None:
         """Corrects unknown values in specified columns."""
@@ -185,30 +181,30 @@ class DataCleaning:
             raise Exception("Unexpected null values found after preprocessing")
 
 
-if __name__ == "__main__":
-    # Set up logging
-    setup_logging(CLEANING_LOGS)
+# if __name__ == "__main__":
+#     # Set up logging
+#     setup_logging(CLEANING_LOGS)
 
-    try:
-        # Load configuration
-        config = load_config(CONFIG)  # Returns Config instance
-        logger.info(f"Loaded configuration from {CONFIG}")
+#     try:
+#         # Load configuration
+#         config = load_config(CONFIG_DATABRICKS)  # Returns Config instance
+#         logger.info(f"Loaded configuration from {CONFIG_DATABRICKS}")
 
-        # Create and run data cleaner
-        data_cleaner = DataCleaning(FILEPATH, config)
-        cleaned_data = data_cleaner.preprocess_data()
+#         # Create and run data cleaner
+#         data_cleaner = DataCleaning(FILEPATH_DATABRICKS, config, spark)
+#         cleaned_data = data_cleaner.preprocess_data()
 
-        # Log results
-        logger.info("Data cleaning completed successfully")
-        logger.info(f"Final data shape: {cleaned_data.shape}")
-        logger.info(f"Final columns: {cleaned_data.columns.tolist()}")
-        logger.info(f"Sample of cleaned data:\n{cleaned_data.head().to_string()}")
+#         # Log results
+#         logger.info("Data cleaning completed successfully")
+#         logger.info(f"Final data shape: {cleaned_data.shape}")
+#         logger.info(f"Final columns: {cleaned_data.columns.tolist()}")
+#         logger.info(f"Sample of cleaned data:\n{cleaned_data.head().to_string()}")
 
-    except ValidationError as e:
-        logger.error(f"Configuration validation error: {e}")
-        raise
-    except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
-        raise
+#     except ValidationError as e:
+#         logger.error(f"Configuration validation error: {e}")
+#         raise
+#     except Exception as e:
+#         logger.error(f"Unexpected error: {str(e)}")
+#         raise
 
-    logger.info("Data cleaning script completed successfully")
+#     logger.info("Data cleaning script completed successfully")

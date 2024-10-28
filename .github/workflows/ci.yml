@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  # push:
-  #   branches:
-  #     - setup  # Trigger on push to the 'setup' branch
+  push:
+    branches:
+      - mlflow  # Trigger on push to the 'mlflow' branch
 
   pull_request:
     branches:
@@ -13,24 +13,26 @@ jobs:
   build_and_test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
       - name: Set up Python
         uses: actions/setup-python@v5
+        id: setup-python                         # Add an ID for reference
         with:
           python-version-file: "pyproject.toml"  # Automatically installs the correct Python version
                                                  # Specified in requires-python
-      - name: Create virtual environment
+      - name: Create virtual environment         # Uses the previous Python version
         run: |
-          uv venv -p 3.11 .venv
+          uv venv -p ${{ steps.setup-python.outputs.python-version }} .venv
 
       - name: Activate virtual environment and install dependencies
         run: |
           source .venv/bin/activate
-          uv pip install -r pyproject.toml --all-extras
+          uv sync --all-extras
 
       - name: Load environment variables
         run: |

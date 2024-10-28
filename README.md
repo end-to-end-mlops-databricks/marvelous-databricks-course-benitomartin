@@ -33,12 +33,12 @@ uv lock
 # Authentication
 databricks auth login --configure-cluster --host <workspace-url>
 
-Profiles
+# Profiles
 databricks auth profiles
 cat ~/.databrickscfg
 
 # Root Dir
-databricks fs ls dbfs:/s
+databricks fs ls dbfs:/
 ```
 
 ### Catalog Creation
@@ -71,7 +71,7 @@ databricks volumes create maven default packages MANAGED
 databricks fs cp dist/mlops_with_databricks-0.0.1-py3-none-any.whl dbfs:/Volumes/maven/default/packages
 
 # Overwrite Package
-databricks fs cp dist/credit_default_databricks-0.0.5-py3-none-any.whl dbfs:/Volumes/maven/default/packages --overwrite
+databricks fs cp dist/credit_default_databricks-0.0.7-py3-none-any.whl dbfs:/Volumes/maven/default/packages --overwrite
 ```
 
 ## Data
@@ -79,7 +79,20 @@ databricks fs cp dist/credit_default_databricks-0.0.5-py3-none-any.whl dbfs:/Vol
 Default of Credit Card Clients Dataset
 https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/data
 
-## First PR
+
+## Second PR - Branch: mlflow
+
+- Added hatchling
+- Activated editabel mode: uv pip install -e .
+- Removed "src" imports
+- Improved src code, added utils and model training
+- Added logs to .gitignore
+- Added training to main
+- Added .gitattributes
+- Added mlflow notebooks (base, custom and feature store)
+- Added Pydantic
+
+## First PR - Branch: setup
 
 - Corrected README.md ".venv" instead of "venv"
 - Added README.md Databricks instructions
@@ -91,18 +104,3 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Added larger size data for pre-commit (upt to 3 MB)
 - Added pytest, loguru, precommit, imbalanced-learn and ruff in dependencies
 - Added Makefile
-
-
-# Bug
-
-Run data_preprocessing as module
-```
-python -m src.credit_default.data_preprocessing
-```
-
-Or change import as
-
-```
-from src.credit_default.data_cleaning import DataCleaning
-from data_cleaning import DataCleaning
-```

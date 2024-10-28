@@ -4,6 +4,7 @@ schema_name: default
 parameters:
   learning_rate: 0.05
   random_state: 42
+  force_col_wise: true
 
 num_features:
   - name: LIMIT_BAL
@@ -57,6 +58,23 @@ num_features:
 target:
   - name: default.payment.next.month
     dtype: int64
+    new_name: Default
 
 columns_to_drop:
   - ID
+
+features:
+  robust:
+    - Limit_bal
+    - Bill_amt1
+    - Bill_amt2
+    - Bill_amt3
+    - Bill_amt4
+    - Bill_amt5
+    - Bill_amt6
+    - Pay_amt1
+    - Pay_amt2
+    - Pay_amt3
+    - Pay_amt4
+    - Pay_amt5
+    - Pay_amt6
