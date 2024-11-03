@@ -79,6 +79,11 @@ databricks fs cp dist/credit_default_databricks-0.0.7-py3-none-any.whl dbfs:/Vol
 Default of Credit Card Clients Dataset
 https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/data
 
+## Third PR - Branch: serving
+
+- Reorganized Notebooks Folders
+- Changed env var "CONFIG DATABRICKS" and "CODE_PATH"
+
 
 ## Second PR - Branch: mlflow
 
