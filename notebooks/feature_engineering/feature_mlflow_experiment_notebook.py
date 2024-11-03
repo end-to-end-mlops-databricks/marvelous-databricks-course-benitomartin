@@ -1,4 +1,11 @@
 # Databricks notebook source
+"""
+
+THIS NOTEBOOK CAN ONLY BE RUN IN DATABRICKS UI
+IN VSCODE WON'T WORK
+
+"""
+
 import mlflow
 from databricks import feature_engineering
 from databricks.feature_store import FeatureLookup
