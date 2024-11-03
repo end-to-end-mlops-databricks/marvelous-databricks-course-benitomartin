@@ -164,10 +164,6 @@ pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMCl
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
 # Set and start MLflow experiment
 mlflow.set_experiment(experiment_name="/Shared/credit-fe")
 
