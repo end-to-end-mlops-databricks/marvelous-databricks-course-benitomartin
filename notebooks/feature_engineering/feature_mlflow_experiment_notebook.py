@@ -1,5 +1,4 @@
 # Databricks notebook source
-# Databricks notebook source
 import mlflow
 from databricks import feature_engineering
 from databricks.feature_store import FeatureLookup
@@ -17,6 +16,7 @@ from credit_default.utils import load_config
 
 config = load_config("/Volumes/maven/default/config/project_config.yml")
 parameters = config.parameters
+print(config)
 
 # COMMAND ----------
 
@@ -107,6 +107,7 @@ columns = [
 train_set = spark.table("maven.default.train_set").drop(*columns)
 
 # COMMAND ----------
+
 mlflow.set_tracking_uri("databricks")
 mlflow.set_registry_uri("databricks-uc")
 
@@ -163,7 +164,10 @@ pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMCl
 
 # COMMAND ----------
 
+
+
 # COMMAND ----------
+
 # Set and start MLflow experiment
 mlflow.set_experiment(experiment_name="/Shared/credit-fe")
 
