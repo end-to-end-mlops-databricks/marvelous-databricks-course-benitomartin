@@ -167,7 +167,7 @@ pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMCl
 # Set and start MLflow experiment
 mlflow.set_experiment(experiment_name="/Shared/credit-fe")
 
-with mlflow.start_run(tags={"branch": "mlflow"}) as run:
+with mlflow.start_run(tags={"branch": "serving"}) as run:
     run_id = run.info.run_id
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
