@@ -1,3 +1,4 @@
+# Databricks notebook source
 """
 
 THIS NOTEBOOK CAN ONLY BE RUN IN DATABRICKS UI
@@ -14,7 +15,6 @@ from imblearn.over_sampling import SMOTE
 from lightgbm import LGBMClassifier
 from mlflow.models import infer_signature
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score
 from sklearn.pipeline import Pipeline
@@ -68,12 +68,14 @@ spark.sql(create_table_sql)
 
 # Add primary key and enable CDF
 spark.sql("ALTER TABLE maven.default.balanced_features " "ADD CONSTRAINT balanced_features_pk PRIMARY KEY(Id);")
+
 spark.sql("ALTER TABLE maven.default.balanced_features " "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
 
 # Convert Spark DataFrame to Pandas for SMOTE
 train_pdf = spark.table("maven.default.train_set").toPandas()
 
 # Separate features and target
+
 X = train_pdf[columns]
 y = train_pdf["Default"]
 
@@ -81,25 +83,32 @@ y = train_pdf["Default"]
 smote = SMOTE(random_state=42)
 X_balanced, y_balanced = smote.fit_resample(X, y)
 
-# Create IDs for all samples (original + synthetic)
-total_samples = len(X_balanced)
-all_ids = [f"id_{i}" for i in range(total_samples)]
+# Use existing Ids from the original DataFrame instead of creating new ones
+original_ids = train_pdf["Id"].values  # Get the original Ids
 
 # Create balanced DataFrame
 balanced_df = pd.DataFrame(X_balanced, columns=columns)
-balanced_df["Id"] = all_ids
+
+# If the length of X_balanced is greater than the length of original_ids,
+# create new IDs for the synthetic samples.
+if len(X_balanced) > len(original_ids):
+    synthetic_ids = [f"id_{i}" for i in range(len(original_ids), len(X_balanced))]
+    balanced_df["Id"] = list(original_ids) + synthetic_ids
+else:
+    balanced_df["Id"] = original_ids[: len(X_balanced)]  # Use original Ids
+
 
 # Convert back to Spark DataFrame and insert into feature table
 balanced_spark_df = spark.createDataFrame(balanced_df)
-balanced_spark_df.write.format("delta").mode("append").saveAsTable("maven.default.balanced_features")
+balanced_spark_df.write.format("delta").mode("overwrite").saveAsTable("maven.default.balanced_features")
 
 # Now use create_training_set to create balanced training set
 # Drop the original features that will be looked up from the feature store
 train_set = spark.table("maven.default.train_set").drop(*columns)
 
-# Add Id column to train_set if it doesn't exist
-if "Id" not in train_set.columns:
-    train_set = train_set.withColumn("Id", F.monotonically_increasing_id().cast("string"))
+# # Add Id column to train_set if it doesn't exist
+# if "Id" not in train_set.columns:
+#     train_set = train_set.withColumn("Id", F.monotonically_increasing_id().cast("string"))
 
 # COMMAND ----------
 mlflow.set_tracking_uri("databricks")

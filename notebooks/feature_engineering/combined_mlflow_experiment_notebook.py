@@ -127,7 +127,7 @@ def main():
         # Register models
         model_name = f"{catalog_name}.{schema_name}.credit_default_model_pyfunc"
         model_version = mlflow.register_model(
-            model_uri=f"runs:/{run_id}/pyfunc_credit_default_model", name=model_name, tags={"branch": "mlflow"}
+            model_uri=f"runs:/{run_id}/pyfunc_credit_default_model", name=model_name, tags={"branch": "serving"}
         )
 
         # Set alias

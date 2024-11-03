@@ -43,10 +43,10 @@ train_set_spark = spark.table(f"{catalog_name}.{schema_name}.train_set")
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
 
-X_train = train_set.drop(columns=["Default", "Update_timestamp_utc"])
+X_train = train_set.drop(columns=["Default", "Id", "Update_timestamp_utc"])
 y_train = train_set["Default"]
 
-X_test = test_set.drop(columns=["Default"])
+X_test = test_set.drop(columns=["Default", "Id", "Update_timestamp_utc"])
 y_test = test_set["Default"]
 
 # COMMAND ----------
@@ -73,7 +73,7 @@ pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("regressor", LGBMCla
 mlflow.set_experiment(experiment_name="/Shared/credit_default")
 
 # Start an MLflow run to track the training process
-with mlflow.start_run(tags={"branch": "mlflow"}) as run:
+with mlflow.start_run(tags={"branch": "serving"}) as run:
     run_id = run.info.run_id
 
     # Train the model
@@ -108,3 +108,5 @@ model_version = mlflow.register_model(
 # Optionally, save the model version information
 with open("model_version.json", "w") as json_file:
     json.dump(model_version.__dict__, json_file, indent=4)
+
+# COMMAND ----------

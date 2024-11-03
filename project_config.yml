@@ -7,6 +7,8 @@ parameters:
   force_col_wise: true
 
 num_features:
+  - name: ID
+    dtype: int64
   - name: LIMIT_BAL
     dtype: float64
   - name: SEX
@@ -60,8 +62,6 @@ target:
     dtype: int64
     new_name: Default
 
-columns_to_drop:
-  - ID
 
 features:
   robust:

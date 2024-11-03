@@ -53,3 +53,5 @@ except Exception as e:
     logger.error(f"An error occurred: {str(e)}")
 
     logger.info("DataPreprocessor script completed")
+
+# COMMAND ----------

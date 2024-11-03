@@ -42,7 +42,6 @@ class DataCleaning:
         self.config = config
         self.df = self._load_data(filepath)
         self._setup_target_config()
-        self._validate_dataframe()
 
     @staticmethod
     def _validate_file_exists(filepath: str) -> None:
@@ -87,18 +86,6 @@ class DataCleaning:
         except pd.errors.EmptyDataError as e:
             raise Exception(f"Failed to load data: {str(e)}") from e
 
-    def _validate_dataframe(self) -> None:
-        """
-        Validates the loaded DataFrame structure and content.
-
-        Raises:
-            Exception: If DataFrame validation fails
-        """
-        columns_to_check = self.config.columns_to_drop + [self.target_config.name]
-        missing_columns = [col for col in columns_to_check if col not in self.df.columns]
-        if missing_columns:
-            raise Exception(f"Missing required columns: {', '.join(missing_columns)}")
-
     def _validate_columns(self) -> None:
         """
         Validates that required columns exist in the DataFrame.
@@ -106,7 +93,7 @@ class DataCleaning:
         Raises:
             Exception: If DataFrame validation fails
         """
-        columns_to_check = self.config.columns_to_drop + [self.target_config.name]
+        columns_to_check = [feature.name for feature in self.config.num_features] + [self.target_config.name]
         missing_columns = [col for col in columns_to_check if col not in self.df.columns]
         if missing_columns:
             raise Exception(f"Missing required columns: {', '.join(missing_columns)}")
@@ -133,28 +120,31 @@ class DataCleaning:
         """
         try:
             logger.info("Starting data preprocessing")
-            self._drop_columns()
             self._rename_and_capitalize_columns()
             self._apply_value_corrections()
             self._validate_preprocessed_data()
-            logger.info("Data preprocessing completed successfully")
-            return self.df
-        except Exception as e:
-            raise Exception(f"Preprocessing failed: {str(e)}") from e
 
-    def _drop_columns(self) -> None:
-        """Removes specified columns from the DataFrame."""
-        columns_to_drop = getattr(self.config, "columns_to_drop", [])
-        if columns_to_drop:
-            self.df.drop(
-                columns=[col for col in columns_to_drop if col in self.df.columns], inplace=True, errors="ignore"
-            )
-            logger.info(f"Dropped columns: {', '.join(columns_to_drop)}")
+            logger.info("Data cleaning completed successfully")
+            logger.info(f"Final data shape: {self.df.shape}")
+            logger.info(f"Final columns: {self.df.columns.tolist()}")
+            logger.info(f"ID column data type: {self.df['Id'].dtype}")
+            logger.info(f"Sample of cleaned data:\n{self.df.head().to_string()}")
+            logger.info("Data cleaning script completed successfully")
+
+            return self.df
+
+        except ValidationError as e:
+            logger.error(f"Configuration validation error: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            raise
 
     def _rename_and_capitalize_columns(self) -> None:
         """Renames and capitalizes key columns."""
         self.df.rename(columns={self.target_config.name: self.target_config.new_name}, inplace=True)
         self.df.columns = [col.capitalize() if col else col for col in self.df.columns]
+        self.df["Id"] = self.df["Id"].astype("str")
         logger.info("Renamed and capitalized columns")
 
     def _apply_value_corrections(self) -> None:
@@ -198,11 +188,12 @@ if __name__ == "__main__":
         data_cleaner = DataCleaning(FILEPATH, config)
         cleaned_data = data_cleaner.preprocess_data()
 
-        # Log results
-        logger.info("Data cleaning completed successfully")
-        logger.info(f"Final data shape: {cleaned_data.shape}")
-        logger.info(f"Final columns: {cleaned_data.columns.tolist()}")
-        logger.info(f"Sample of cleaned data:\n{cleaned_data.head().to_string()}")
+    #     # Log results
+    #     logger.info("Data cleaning completed successfully")
+    #     logger.info(f"Final data shape: {cleaned_data.shape}")
+    #     logger.info(f"Final columns: {cleaned_data.columns.tolist()}")
+    #     logger.info(f"ID column data type: {cleaned_data['Id'].dtype}")
+    #     logger.info(f"Sample of cleaned data:\n{cleaned_data.head().to_string()}")
 
     except ValidationError as e:
         logger.error(f"Configuration validation error: {e}")
@@ -211,4 +202,4 @@ if __name__ == "__main__":
         logger.error(f"Unexpected error: {str(e)}")
         raise
 
-    logger.info("Data cleaning script completed successfully")
+    # logger.info("Data cleaning script completed successfully")

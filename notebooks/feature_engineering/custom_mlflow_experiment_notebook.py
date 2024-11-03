@@ -38,7 +38,7 @@ parameters = config.parameters
 # Check last run
 run_id = mlflow.search_runs(
     experiment_names=["/Shared/credit_default"],
-    filter_string="tags.branch='mlflow'",
+    filter_string="tags.branch='serving'",
 ).run_id[0]
 
 print(run_id)
@@ -71,10 +71,10 @@ test_set_spark = spark.table(f"{catalog_name}.{schema_name}.test_set")
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
 
-X_train = train_set.drop(columns=["Default", "Update_timestamp_utc"])
+X_train = train_set.drop(columns=["Default", "Id", "Update_timestamp_utc"])
 y_train = train_set["Default"]
 
-X_test = test_set.drop(columns=["Default"])
+X_test = test_set.drop(columns=["Default", "Id", "Update_timestamp_utc"])
 y_test = test_set["Default"]
 
 # COMMAND ----------
@@ -95,7 +95,7 @@ mlflow.set_experiment(experiment_name="/Shared/credit_default_pyfunc")
 
 
 # Start an MLflow run to track the training process
-with mlflow.start_run(tags={"branch": "mlflow"}) as run:
+with mlflow.start_run(tags={"branch": "serving"}) as run:
     run_id = run.info.run_id
 
     signature = infer_signature(model_input=X_train, model_output={"Prediction": example_prediction})
@@ -107,7 +107,7 @@ with mlflow.start_run(tags={"branch": "mlflow"}) as run:
     mlflow.pyfunc.log_model(
         python_model=wrapped_model,
         artifact_path="pyfunc_credit_default_model",
-        code_paths=["wheel/credit_default_databricks-0.0.8-py3-none-any.whl"],
+        code_paths=["wheel/credit_default_databricks-0.0.7-py3-none-any.whl"],
         signature=signature,
     )
 
@@ -119,7 +119,7 @@ loaded_model.unwrap_python_model()
 model_name = f"{catalog_name}.{schema_name}.credit_default_model_pyfunc"
 
 model_version = mlflow.register_model(
-    model_uri=f"runs:/{run_id}/pyfunc_credit_default_model", name=model_name, tags={"branch": "mlflow"}
+    model_uri=f"runs:/{run_id}/pyfunc_credit_default_model", name=model_name, tags={"branch": "serving"}
 )
 # COMMAND ----------
 
@@ -135,3 +135,5 @@ model = mlflow.pyfunc.load_model(model_uri)
 
 # COMMAND ----------
 client.get_model_version_by_alias(model_name, model_version_alias)
+
+# COMMAND ----------

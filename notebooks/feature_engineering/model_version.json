@@ -1,0 +1,18 @@
+{
+    "_name": "maven.default.credit_default_model_pyfunc",
+    "_version": "1",
+    "_creation_time": 1730645565276,
+    "_last_updated_timestamp": 1730645566322,
+    "_description": "",
+    "_user_id": "benitomartin@martindatasol.com",
+    "_current_stage": null,
+    "_source": "dbfs:/databricks/mlflow-tracking/56121565698235/d28aa08636034ec58f44d40283ed7029/artifacts/pyfunc_credit_default_model",
+    "_run_id": "d28aa08636034ec58f44d40283ed7029",
+    "_run_link": null,
+    "_status": "READY",
+    "_status_message": "",
+    "_tags": {
+        "branch": "serving"
+    },
+    "_aliases": []
+}

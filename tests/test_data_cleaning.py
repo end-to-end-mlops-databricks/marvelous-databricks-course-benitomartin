@@ -62,6 +62,7 @@ def test_columns_after_preprocessing(real_data, config):
     data_cleaning.preprocess_data()
 
     expected_columns = [
+        "Id",
         "Limit_bal",
         "Sex",
         "Education",
