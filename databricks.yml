@@ -5,12 +5,20 @@
 bundle:
   name: marvelous-databricks-course-benitomartin
 
+# targets:
+#   dev:
+#     mode: development
+#     default: true
+#     workspace:
+#       host: https://dbc-df5087bc-8b50.cloud.databricks.com
+
 targets:
   dev:
     mode: development
     default: true
     workspace:
-      host: https://dbc-df5087bc-8b50.cloud.databricks.com
+      host: https://dbc-643c4c2b-d6c9.cloud.databricks.com
+
 
   ## Optionally, there could be 'staging' or 'prod' targets here.
   #
