@@ -5,6 +5,7 @@
 bundle:
   name: marvelous-databricks-course-benitomartin
 
+# Two targets
 targets:
   dev:
     mode: development
