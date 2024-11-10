@@ -22,6 +22,7 @@ load_dotenv()
 CONFIG_DATABRICKS = os.environ["CONFIG_DATABRICKS"]
 PROFILE = os.environ["PROFILE"]
 print(CONFIG_DATABRICKS)
+print(PROFILE)
 
 # COMMAND ----------
 # tracking and registry URIs

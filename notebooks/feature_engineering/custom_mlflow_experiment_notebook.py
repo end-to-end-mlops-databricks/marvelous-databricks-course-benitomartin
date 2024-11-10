@@ -107,7 +107,7 @@ with mlflow.start_run(tags={"branch": "serving"}) as run:
     mlflow.pyfunc.log_model(
         python_model=wrapped_model,
         artifact_path="pyfunc_credit_default_model",
-        code_paths=["wheel/credit_default_databricks-0.0.7-py3-none-any.whl"],
+        code_paths=["wheel/credit_default_databricks-0.0.8-py3-none-any.whl"],
         signature=signature,
     )
 
