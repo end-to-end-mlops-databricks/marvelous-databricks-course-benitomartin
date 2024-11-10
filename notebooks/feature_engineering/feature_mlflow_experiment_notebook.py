@@ -63,58 +63,63 @@ columns = [
 
 # COMMAND ----------
 
-# from imblearn.over_sampling import SMOTE
-# import pandas as pd
-# from pyspark.sql import functions as F
+from imblearn.over_sampling import SMOTE
+import pandas as pd
+from pyspark.sql import functions as F
 
-# # First, create the feature table with original data
-# create_table_sql = f"""
-# CREATE OR REPLACE TABLE mlops_students.benitomartin.balanced_features
-# (Id STRING NOT NULL,
-#  {', '.join([f'{col} DOUBLE' for col in columns])})
-# """
-# spark.sql(create_table_sql)
+# First, create the feature table with original data
+create_table_sql = f"""
+CREATE OR REPLACE TABLE mlops_students.benitomartin.features_balanced
+(Id STRING NOT NULL,
+ {', '.join([f'{col} DOUBLE' for col in columns])})
+"""
+spark.sql(create_table_sql)
 
-# # Add primary key and enable CDF
-# spark.sql("ALTER TABLE mlops_students.benitomartin.balanced_features ADD CONSTRAINT balanced_features_pk PRIMARY KEY(Id);")
-# spark.sql("ALTER TABLE mlops_students.benitomartin.balanced_features SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
+# Add primary key and enable CDF
+spark.sql("ALTER TABLE mlops_students.benitomartin.features_balanced ADD CONSTRAINT features_balanced_pk PRIMARY KEY(Id);")
+spark.sql("ALTER TABLE mlops_students.benitomartin.features_balanced SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
 
-# # Convert Spark DataFrame to Pandas for SMOTE
-# train_pdf = spark.table("mlops_students.benitomartin.train_set").toPandas()
+# Convert Spark DataFrame to Pandas for SMOTE
+train_pdf = spark.table("mlops_students.benitomartin.train_set").toPandas()
 
-# # Separate features and target
-# X = train_pdf[columns]
-# y = train_pdf["Default"]
+# Separate features and target
+X = train_pdf[columns]
+y = train_pdf["Default"]
 
-# # Apply SMOTE
-# smote = SMOTE(random_state=42)
-# X_balanced, y_balanced = smote.fit_resample(X, y)
+# Apply SMOTE
+smote = SMOTE(random_state=42)
+X_balanced, y_balanced = smote.fit_resample(X, y)
 
-# # Create balanced DataFrame
-# balanced_df = pd.DataFrame(X_balanced, columns=columns)
+# Create balanced DataFrame
+balanced_df = pd.DataFrame(X_balanced, columns=columns)
 
-# # Identify the number of original samples
-# num_original_samples = len(train_pdf)
+# Identify the number of original samples
+num_original_samples = len(train_pdf)
 
-# # Retain original Ids for the real samples and create new Ids for synthetic samples
-# balanced_df["Id"] = train_pdf["Id"].values.tolist() + [f"id_{i}" for i in range(num_original_samples, len(balanced_df))]
+# Retain original Ids for the real samples and create new Ids for synthetic samples
+balanced_df["Id"] = train_pdf["Id"].values.tolist() + [f"id_{i}" for i in range(num_original_samples, len(balanced_df))]
 
-# # Convert back to Spark DataFrame and insert into feature table
-# balanced_spark_df = spark.createDataFrame(balanced_df)
+# Convert back to Spark DataFrame and insert into feature table
+balanced_spark_df = spark.createDataFrame(balanced_df)
 
-# # Cast columns in balanced_spark_df to match the schema of the Delta table
-# columns_to_cast = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6"]
+# Cast columns in balanced_spark_df to match the schema of the Delta table
+columns_to_cast = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6"]
 
-# for column in columns_to_cast:
-#     balanced_spark_df = balanced_spark_df.withColumn(column, F.col(column).cast("double"))
+for column in columns_to_cast:
+    balanced_spark_df = balanced_spark_df.withColumn(column, F.col(column).cast("double"))
 
-# balanced_spark_df.write.format("delta").mode("append").saveAsTable("mlops_students.benitomartin.balanced_features")
+balanced_spark_df.write.format("delta").mode("append").saveAsTable("mlops_students.benitomartin.features_balanced")
 
 # COMMAND ----------
 
 # Now use create_training_set to create balanced training set
 # Drop the original features that will be looked up from the feature store
-train_set = spark.table("mlops_students.benitomartin.train_set").drop(*columns)
+# Define the list of columns you want to drop, including "Update_timestamp_utc"
+columns_to_drop = columns + ["Update_timestamp_utc"]
+
+# Drop the specified columns from the train_set
+train_set = spark.table("mlops_students.benitomartin.train_set").drop(*columns_to_drop)
+
 
 # COMMAND ----------
 
@@ -126,12 +131,12 @@ training_set = fe.create_training_set(
     label="Default",
     feature_lookups=[
         FeatureLookup(
-            table_name="mlops_students.benitomartin.balanced_features",
+            table_name="mlops_students.benitomartin.features_balanced",
             feature_names=columns,
             lookup_key="Id",
         )
     ],
-    exclude_columns=["update_timestamp_utc"],
+    exclude_columns=["Update_timestamp_utc"],
 )
 
 
@@ -175,7 +180,7 @@ pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMCl
 # COMMAND ----------
 
 # Set and start MLflow experiment
-mlflow.set_experiment(experiment_name="/Shared/credit-fe")
+mlflow.set_experiment(experiment_name="/Shared/credit-feature")
 
 with mlflow.start_run(tags={"branch": "serving"}) as run:
     run_id = run.info.run_id
@@ -198,11 +203,16 @@ with mlflow.start_run(tags={"branch": "serving"}) as run:
     fe.log_model(
         model=pipeline,
         flavor=mlflow.sklearn,
-        artifact_path="lightgbm-pipeline-model-fe",
+        artifact_path="lightgbm-pipeline-model-feature",
         training_set=training_set,
         signature=signature,
     )
 
 # COMMAND ----------
 
-mlflow.register_model(model_uri=f"runs:/{run_id}/lightgbm-pipeline-model-fe", name="mlops_students.benitomartin.credit_model_fe")
+print(training_df.columns)
+
+
+# COMMAND ----------
+
+mlflow.register_model(model_uri=f"runs:/{run_id}/lightgbm-pipeline-model-feature", name="mlops_students.benitomartin.credit_model_feature")

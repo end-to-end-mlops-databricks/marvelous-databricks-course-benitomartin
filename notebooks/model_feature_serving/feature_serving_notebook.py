@@ -191,7 +191,7 @@ features = [
     )
 ]
 
-# Create the feature spec for serving
+# Create the feature spec for serving (this can be found in the catalog under functions)
 feature_spec_name = f"{catalog_name}.{schema_name}.return_predictions"
 
 fe.create_feature_spec(name=feature_spec_name, 
