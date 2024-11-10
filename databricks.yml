@@ -5,15 +5,14 @@
 bundle:
   name: marvelous-databricks-course-benitomartin
 
-# targets:
-#   dev:
-#     mode: development
-#     default: true
-#     workspace:
-#       host: https://dbc-df5087bc-8b50.cloud.databricks.com
-
 targets:
   dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-df5087bc-8b50.cloud.databricks.com
+
+  dev_std:
     mode: development
     default: true
     workspace:
