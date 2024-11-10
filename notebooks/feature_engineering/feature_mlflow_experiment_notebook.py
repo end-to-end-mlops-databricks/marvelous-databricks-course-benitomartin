@@ -21,7 +21,7 @@ from credit_default.utils import load_config
 
 # COMMAND ----------
 
-config = load_config("/Volumes/maven/default/config/project_config.yml")
+config = load_config("/Volumes/mlops_students/benitomartin/config/project_config.yml")
 parameters = config.parameters
 print(config)
 
@@ -63,21 +63,24 @@ columns = [
 
 # COMMAND ----------
 
+# from imblearn.over_sampling import SMOTE
+# import pandas as pd
+# from pyspark.sql import functions as F
 
 # # First, create the feature table with original data
 # create_table_sql = f"""
-# CREATE OR REPLACE TABLE maven.default.balanced_features
+# CREATE OR REPLACE TABLE mlops_students.benitomartin.balanced_features
 # (Id STRING NOT NULL,
 #  {', '.join([f'{col} DOUBLE' for col in columns])})
 # """
 # spark.sql(create_table_sql)
 
 # # Add primary key and enable CDF
-# spark.sql("ALTER TABLE maven.default.balanced_features ADD CONSTRAINT balanced_features_pk PRIMARY KEY(Id);")
-# spark.sql("ALTER TABLE maven.default.balanced_features SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
+# spark.sql("ALTER TABLE mlops_students.benitomartin.balanced_features ADD CONSTRAINT balanced_features_pk PRIMARY KEY(Id);")
+# spark.sql("ALTER TABLE mlops_students.benitomartin.balanced_features SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
 
 # # Convert Spark DataFrame to Pandas for SMOTE
-# train_pdf = spark.table("maven.default.train_set").toPandas()
+# train_pdf = spark.table("mlops_students.benitomartin.train_set").toPandas()
 
 # # Separate features and target
 # X = train_pdf[columns]
@@ -105,13 +108,13 @@ columns = [
 # for column in columns_to_cast:
 #     balanced_spark_df = balanced_spark_df.withColumn(column, F.col(column).cast("double"))
 
-# balanced_spark_df.write.format("delta").mode("append").saveAsTable("maven.default.balanced_features")
+# balanced_spark_df.write.format("delta").mode("append").saveAsTable("mlops_students.benitomartin.balanced_features")
 
 # COMMAND ----------
 
 # Now use create_training_set to create balanced training set
 # Drop the original features that will be looked up from the feature store
-train_set = spark.table("maven.default.train_set").drop(*columns)
+train_set = spark.table("mlops_students.benitomartin.train_set").drop(*columns)
 
 # COMMAND ----------
 
@@ -123,7 +126,7 @@ training_set = fe.create_training_set(
     label="Default",
     feature_lookups=[
         FeatureLookup(
-            table_name="maven.default.balanced_features",
+            table_name="mlops_students.benitomartin.balanced_features",
             feature_names=columns,
             lookup_key="Id",
         )
@@ -136,7 +139,7 @@ training_set = fe.create_training_set(
 
 # Load feature-engineered DataFrame
 training_df = training_set.load_df().toPandas()
-test_set = spark.table("maven.default.test_set").toPandas()
+test_set = spark.table("mlops_students.benitomartin.test_set").toPandas()
 
 # Split features and target (exclude 'Id' from features)
 X_train = training_df[columns]
@@ -200,4 +203,6 @@ with mlflow.start_run(tags={"branch": "serving"}) as run:
         signature=signature,
     )
 
-mlflow.register_model(model_uri=f"runs:/{run_id}/lightgbm-pipeline-model-fe", name="maven.default.credit_model_fe")
+# COMMAND ----------
+
+mlflow.register_model(model_uri=f"runs:/{run_id}/lightgbm-pipeline-model-fe", name="mlops_students.benitomartin.credit_model_fe")
