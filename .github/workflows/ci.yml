@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - serving  # Trigger on push to the 'serving' branch
+  # push:
+  #   branches:
+  #     - serving  # Trigger on push to the 'serving' branch
 
   pull_request:
     branches:
