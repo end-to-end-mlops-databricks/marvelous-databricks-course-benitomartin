@@ -3,11 +3,11 @@
 
 # COMMAND ----------
 
-dbutils.library.restartPython()
+# MAGIC %restart_python
 
 # COMMAND ----------
 
-!pip list
+# !pip list
 
 # COMMAND ----------
 
@@ -15,10 +15,6 @@ import time
 
 import requests
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.catalog import (
-    OnlineTableSpec,
-    OnlineTableSpecTriggeredSchedulingPolicy,
-)
 from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
 from pyspark.sql import SparkSession
 
@@ -61,10 +57,10 @@ schema_name = config.schema_name
 ## Used wheel version 0.0.9
 
 ## Otherwise there is an error
-#22 99.07 The conflict is caused by:
-#22 99.07     The user requested pyarrow==15.0.2
-#22 99.07     mlflow 2.17.2 depends on pyarrow<18 and >=4.0.0
-#22 99.07     databricks-feature-lookup 1.2.0 depends on pyarrow==14.*
+# 22 99.07 The conflict is caused by:
+# 22 99.07     The user requested pyarrow==15.0.2
+# 22 99.07     mlflow 2.17.2 depends on pyarrow<18 and >=4.0.0
+# 22 99.07     databricks-feature-lookup 1.2.0 depends on pyarrow==14.*
 
 workspace.serving_endpoints.create(
     name="credit-default-model-serving-feature",
@@ -84,7 +80,7 @@ workspace.serving_endpoints.create(
 
 ## Call the endpoint
 
-token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
+token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
 
@@ -117,7 +113,7 @@ dataframe_records = [[record] for record in sampled_records]
 
 # COMMAND ----------
 
-train_set.dtypes
+print(train_set.dtypes)
 
 
 # COMMAND ----------
@@ -148,5 +144,4 @@ print("Execution time:", execution_time, "seconds")
 
 credit_features = spark.table(f"{catalog_name}.{schema_name}.features_balanced").toPandas()
 
-credit_features.dtypes
-
+print(credit_features.dtypes)

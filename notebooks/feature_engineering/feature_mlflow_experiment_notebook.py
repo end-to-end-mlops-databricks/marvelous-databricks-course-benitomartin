@@ -7,11 +7,14 @@ IN VSCODE WON'T WORK
 """
 
 import mlflow
+import pandas as pd
 from databricks import feature_engineering
 from databricks.feature_store import FeatureLookup
+from imblearn.over_sampling import SMOTE
 from lightgbm import LGBMClassifier
 from mlflow.models import infer_signature
 from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score
 from sklearn.pipeline import Pipeline
@@ -63,9 +66,6 @@ columns = [
 
 # COMMAND ----------
 
-from imblearn.over_sampling import SMOTE
-import pandas as pd
-from pyspark.sql import functions as F
 
 # First, create the feature table with original data
 create_table_sql = f"""
@@ -76,8 +76,12 @@ CREATE OR REPLACE TABLE mlops_students.benitomartin.features_balanced
 spark.sql(create_table_sql)
 
 # Add primary key and enable CDF
-spark.sql("ALTER TABLE mlops_students.benitomartin.features_balanced ADD CONSTRAINT features_balanced_pk PRIMARY KEY(Id);")
-spark.sql("ALTER TABLE mlops_students.benitomartin.features_balanced SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
+spark.sql(
+    "ALTER TABLE mlops_students.benitomartin.features_balanced ADD CONSTRAINT features_balanced_pk PRIMARY KEY(Id);"
+)
+spark.sql(
+    "ALTER TABLE mlops_students.benitomartin.features_balanced SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
+)
 
 # Convert Spark DataFrame to Pandas for SMOTE
 train_pdf = spark.table("mlops_students.benitomartin.train_set").toPandas()
@@ -215,4 +219,6 @@ print(training_df.columns)
 
 # COMMAND ----------
 
-mlflow.register_model(model_uri=f"runs:/{run_id}/lightgbm-pipeline-model-feature", name="mlops_students.benitomartin.credit_model_feature")
+mlflow.register_model(
+    model_uri=f"runs:/{run_id}/lightgbm-pipeline-model-feature", name="mlops_students.benitomartin.credit_model_feature"
+)

@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - mlflow  # Trigger on push to the 'mlflow' branch
+      - serving  # Trigger on push to the 'serving' branch
 
   pull_request:
     branches:

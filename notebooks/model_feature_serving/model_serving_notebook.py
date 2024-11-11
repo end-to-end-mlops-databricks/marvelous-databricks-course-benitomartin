@@ -1,20 +1,13 @@
 # Databricks notebook source
-import time
-
-import requests
 import random
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+import requests
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.serving import (
-    EndpointCoreConfigInput,
-    ServedEntityInput,
-    TrafficConfig,
-    Route,
-)
+from pyspark.sql import SparkSession
 
 from credit_default.utils import load_config
-from pyspark.sql import SparkSession
 
 # COMMAND ----------
 
@@ -34,7 +27,7 @@ schema_name = config.schema_name
 
 # COMMAND ----------
 
-catalog_name, schema_name
+print(catalog_name, schema_name)
 
 # COMMAND ----------
 
@@ -101,13 +94,13 @@ train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
 # COMMAND ----------
 
 ## Call the endpoint
-# Call The Endpoint 
+# Call The Endpoint
 # This will get a notebook token that is required
 # and the host url of the endpoint
 # Ideally you get a token from the cloud provider
 
 
-token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
+token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
 # COMMAND ----------
@@ -116,10 +109,31 @@ print(host)
 
 # COMMAND ----------
 
-required_columns = ['Limit_bal', 'Sex', 'Education', 'Marriage', 'Age', 'Pay_0',
-       'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6', 'Bill_amt1', 'Bill_amt2',
-       'Bill_amt3', 'Bill_amt4', 'Bill_amt5', 'Bill_amt6', 'Pay_amt1',
-       'Pay_amt2', 'Pay_amt3', 'Pay_amt4', 'Pay_amt5', 'Pay_amt6']
+required_columns = [
+    "Limit_bal",
+    "Sex",
+    "Education",
+    "Marriage",
+    "Age",
+    "Pay_0",
+    "Pay_2",
+    "Pay_3",
+    "Pay_4",
+    "Pay_5",
+    "Pay_6",
+    "Bill_amt1",
+    "Bill_amt2",
+    "Bill_amt3",
+    "Bill_amt4",
+    "Bill_amt5",
+    "Bill_amt6",
+    "Pay_amt1",
+    "Pay_amt2",
+    "Pay_amt3",
+    "Pay_amt4",
+    "Pay_amt5",
+    "Pay_amt6",
+]
 
 # COMMAND ----------
 
@@ -133,13 +147,11 @@ len(dataframe_records)
 
 # COMMAND ----------
 
-# Run 1 prediction 
+# Run 1 prediction
 
 start_time = time.time()
 
-model_serving_endpoint = (
-    f"https://{host}/serving-endpoints/credit-default-model-serving/invocations"
-)
+model_serving_endpoint = f"https://{host}/serving-endpoints/credit-default-model-serving/invocations"
 response = requests.post(
     f"{model_serving_endpoint}",
     headers={"Authorization": f"Bearer {token}"},
@@ -158,9 +170,7 @@ print("Execution time:", execution_time, "seconds")
 ## Load Test
 
 # Initialize variables
-model_serving_endpoint = (
-    f"https://{host}/serving-endpoints/credit-default-model-serving/invocations"
-)
+model_serving_endpoint = f"https://{host}/serving-endpoints/credit-default-model-serving/invocations"
 
 headers = {"Authorization": f"Bearer {token}"}
 num_requests = 1000
@@ -204,15 +214,10 @@ print("Average latency per request:", average_latency, "seconds")
 # COMMAND ----------
 
 
-
 # COMMAND ----------
-
-
-
-# COMMAND ----------
-
 
 
 # COMMAND ----------
 
 
+# COMMAND ----------

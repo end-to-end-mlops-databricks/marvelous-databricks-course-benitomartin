@@ -30,13 +30,11 @@ import mlflow
 import pandas as pd
 import requests
 from databricks import feature_engineering
-from databricks.feature_engineering import FeatureLookup
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.catalog import (
     OnlineTableSpec,
     OnlineTableSpecTriggeredSchedulingPolicy,
 )
-
 from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
 from pyspark.sql import SparkSession
 
@@ -68,12 +66,12 @@ catalog_name = config.catalog_name
 schema_name = config.schema_name
 
 # Define table names
-'''
-FeatureTable (Offline): a table stored as a Delta Table in Unity Catalog 
+"""
+FeatureTable (Offline): a table stored as a Delta Table in Unity Catalog
 that contains ML model features with primary key constraint
 
 Online table is a Databricks-managed read-only low-latency store for real-time serving
-'''
+"""
 
 feature_table_name = f"{catalog_name}.{schema_name}.credit_default_preds"
 online_table_name = f"{catalog_name}.{schema_name}.credit_default_preds_online"
@@ -96,10 +94,32 @@ pipeline = mlflow.sklearn.load_model(f"models:/{catalog_name}.{schema_name}.cred
 
 # COMMAND ----------
 
-columns = ['Id', 'Limit_bal', 'Sex', 'Education', 'Marriage', 'Age', 'Pay_0',
-       'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6', 'Bill_amt1', 'Bill_amt2',
-       'Bill_amt3', 'Bill_amt4', 'Bill_amt5', 'Bill_amt6', 'Pay_amt1',
-       'Pay_amt2', 'Pay_amt3', 'Pay_amt4', 'Pay_amt5', 'Pay_amt6']
+columns = [
+    "Id",
+    "Limit_bal",
+    "Sex",
+    "Education",
+    "Marriage",
+    "Age",
+    "Pay_0",
+    "Pay_2",
+    "Pay_3",
+    "Pay_4",
+    "Pay_5",
+    "Pay_6",
+    "Bill_amt1",
+    "Bill_amt2",
+    "Bill_amt3",
+    "Bill_amt4",
+    "Bill_amt5",
+    "Bill_amt6",
+    "Pay_amt1",
+    "Pay_amt2",
+    "Pay_amt3",
+    "Pay_amt4",
+    "Pay_amt5",
+    "Pay_amt6",
+]
 
 # COMMAND ----------
 
@@ -115,17 +135,14 @@ preds_df = spark.createDataFrame(preds_df)
 
 # COMMAND ----------
 
-preds_df
+print(preds_df)
 
 # COMMAND ----------
 
 # 1. Create the feature table in Databricks
 
 fe.create_table(
-    name=feature_table_name, 
-    primary_keys=["Id"], 
-    df=preds_df, 
-    description="Credit Default predictions feature table"
+    name=feature_table_name, primary_keys=["Id"], df=preds_df, description="Credit Default predictions feature table"
 )
 
 # COMMAND ----------
@@ -160,7 +177,7 @@ spec = OnlineTableSpec(
 
 # ignore "already exists" error
 try:
- online_table_pipeline = workspace.online_tables.create(name=online_table_name, spec=spec)
+    online_table_pipeline = workspace.online_tables.create(name=online_table_name, spec=spec)
 
 except Exception as e:
     if "already exists" in str(e):
@@ -185,8 +202,8 @@ print(columns)
 
 # features = [
 #     FeatureLookup(
-#         table_name=feature_table_name, 
-#         lookup_key="Id", 
+#         table_name=feature_table_name,
+#         lookup_key="Id",
 #         feature_names=columns_wo_id + ["Predicted_Default"]
 #     )
 # ]
@@ -194,8 +211,8 @@ print(columns)
 # # Create the feature spec for serving (this can be found in the catalog under functions)
 feature_spec_name = f"{catalog_name}.{schema_name}.return_predictions"
 
-# fe.create_feature_spec(name=feature_spec_name, 
-#                        features=features, 
+# fe.create_feature_spec(name=feature_spec_name,
+#                        features=features,
 #                        exclude_columns=None)
 
 # COMMAND ----------
@@ -218,12 +235,12 @@ workspace.serving_endpoints.create(
 
 # COMMAND ----------
 
-# Call The Endpoint 
+# Call The Endpoint
 # This will get a notebook token that is required
 # and the host url of the endpoint
 # Ideally you get a token from the cloud provider
 
-token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
+token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
 
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
@@ -278,6 +295,7 @@ id_list = preds_df.select("Id").rdd.flatMap(lambda x: x).collect()
 headers = {"Authorization": f"Bearer {token}"}
 num_requests = 10
 
+
 # Function to make a request and record latency
 def send_request():
     random_id = random.choice(id_list)
@@ -290,7 +308,6 @@ def send_request():
     end_time = time.time()
     latency = end_time - start_time  # Calculate latency for this request
     return response.status_code, latency
-
 
 
 # COMMAND ----------
@@ -317,5 +334,3 @@ print("\nTotal execution time:", total_execution_time, "seconds")
 print("Average latency per request:", average_latency, "seconds")
 
 # COMMAND ----------
-
-

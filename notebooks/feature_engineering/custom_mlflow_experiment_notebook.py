@@ -54,6 +54,7 @@ model = mlflow.sklearn.load_model(f"runs:/{run_id}/lightgbm-pipeline-model")
 
 # COMMAND ----------
 
+
 # Model Wrapper
 class CreditDefaultModelWrapper(mlflow.pyfunc.PythonModel):
     def __init__(self, model):

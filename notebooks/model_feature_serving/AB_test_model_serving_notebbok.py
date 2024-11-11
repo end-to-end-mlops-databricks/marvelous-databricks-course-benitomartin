@@ -1,21 +1,20 @@
 # Databricks notebook source
+import hashlib
 import time
 
 import mlflow
 import pandas as pd
+import requests
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
+from lightgbm import LGBMClassifier
 from mlflow import MlflowClient
 from mlflow.models import infer_signature
 from pyspark.sql import SparkSession
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score  # classification_report, confusion_matrix,
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder
-import requests
-import hashlib
 from sklearn.preprocessing import RobustScaler
-from lightgbm import LGBMClassifier
 
 from credit_default.utils import load_config
 
@@ -133,22 +132,18 @@ with mlflow.start_run(tags={"model_class": "A", "branch": "serving"}) as run:
     mlflow.log_param("model_type", "LightGBM with preprocessing")
     mlflow.log_params(parameters_a)
     mlflow.log_metric("AUC", auc_test)
-    
-    # Log the input dataset
-    dataset = mlflow.data.from_spark(train_set_spark, 
-                                     table_name=f"{catalog_name}.{schema_name}.train_set", 
-                                     version="0")
-    
-    mlflow.log_input(dataset, context="training")
 
+    # Log the input dataset
+    dataset = mlflow.data.from_spark(train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set", version="0")
+
+    mlflow.log_input(dataset, context="training")
 
     # Log the model
     signature = infer_signature(model_input=X_train, model_output=y_pred)
-    mlflow.sklearn.log_model(sk_model=pipeline, 
-                             artifact_path="lightgbm-pipeline-model",signature=signature)
+    mlflow.sklearn.log_model(sk_model=pipeline, artifact_path="lightgbm-pipeline-model", signature=signature)
 
 
-## To avoid the integer warning, transform int32 to float64 
+## To avoid the integer warning, transform int32 to float64
 ## X_train.astype({col: 'float64' for col in X_train.select_dtypes(include='int32').columns})
 
 
@@ -156,25 +151,21 @@ with mlflow.start_run(tags={"model_class": "A", "branch": "serving"}) as run:
 
 # Regsiter Model A
 model_version = mlflow.register_model(
-    model_uri=f"runs:/{run_id}/lightgbm-pipeline-model", 
-    name=model_name, 
-    tags={"model_class": "A", "branch": "serving"}
+    model_uri=f"runs:/{run_id}/lightgbm-pipeline-model", name=model_name, tags={"model_class": "A", "branch": "serving"}
 )
 
 # COMMAND ----------
 
-model_version.version
+print(model_version.version)
 
 # COMMAND ----------
 
-## Assign Alias to registered Model A 
+## Assign Alias to registered Model A
 
 # Assign alias for easy reference in future A/B tests
 model_version_alias = "model_A"
 
-client.set_registered_model_alias(name= model_name, 
-                                  alias = model_version_alias, 
-                                  version = f"{model_version.version}")
+client.set_registered_model_alias(name=model_name, alias=model_version_alias, version=f"{model_version.version}")
 
 model_uri = f"models:/{model_name}@{model_version_alias}"
 
@@ -204,39 +195,31 @@ with mlflow.start_run(tags={"model_class": "B", "branch": "serving"}) as run:
     mlflow.log_param("model_type", "LightGBM with preprocessing")
     mlflow.log_params(parameters_b)
     mlflow.log_metric("AUC", auc_test)
-    
-    # Log the input dataset
-    dataset = mlflow.data.from_spark(train_set_spark, 
-                                     table_name=f"{catalog_name}.{schema_name}.train_set", 
-                                     version="0")
-    
-    mlflow.log_input(dataset, context="training")
 
+    # Log the input dataset
+    dataset = mlflow.data.from_spark(train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set", version="0")
+
+    mlflow.log_input(dataset, context="training")
 
     # Log the model
     signature = infer_signature(model_input=X_train, model_output=y_pred)
-    mlflow.sklearn.log_model(sk_model=pipeline, 
-                             artifact_path="lightgbm-pipeline-model",signature=signature)
+    mlflow.sklearn.log_model(sk_model=pipeline, artifact_path="lightgbm-pipeline-model", signature=signature)
 
 # COMMAND ----------
 
 # Regsiter Model B
 model_version = mlflow.register_model(
-    model_uri=f"runs:/{run_id}/lightgbm-pipeline-model", 
-    name=model_name, 
-    tags={"model_class": "B", "branch": "serving"}
+    model_uri=f"runs:/{run_id}/lightgbm-pipeline-model", name=model_name, tags={"model_class": "B", "branch": "serving"}
 )
 
 # COMMAND ----------
 
-## Assign Alias to registered Model B 
+## Assign Alias to registered Model B
 
 # Assign alias for easy reference in future A/B tests
 model_version_alias = "model_B"
 
-client.set_registered_model_alias(name= model_name, 
-                                  alias = model_version_alias, 
-                                  version = f"{model_version.version}")
+client.set_registered_model_alias(name=model_name, alias=model_version_alias, version=f"{model_version.version}")
 
 model_uri = f"models:/{model_name}@{model_version_alias}"
 
@@ -247,6 +230,7 @@ model_B = mlflow.sklearn.load_model(model_uri)
 ## Wrapper that takes both models and send predictions to one
 ## or the other depending on the row number (hashed)
 
+
 class CreditDefaultModelWrapper(mlflow.pyfunc.PythonModel):
     def __init__(self, models):
         self.models = models
@@ -255,28 +239,51 @@ class CreditDefaultModelWrapper(mlflow.pyfunc.PythonModel):
 
     def predict(self, context, model_input):
         if isinstance(model_input, pd.DataFrame):
-            credit_id = str(model_input["Id"].values[0]) # Id number
+            credit_id = str(model_input["Id"].values[0])  # Id number
             hashed_id = hashlib.md5(credit_id.encode(encoding="UTF-8")).hexdigest()
 
             # convert a hexadecimal (base-16) string into an integer
             if int(hashed_id, 16) % 2:
-              predictions = self.model_a.predict(model_input.drop(["Id"], axis=1))
-              return {"Prediction": predictions[0], "model": "Model A"}
+                predictions = self.model_a.predict(model_input.drop(["Id"], axis=1))
+                return {"Prediction": predictions[0], "model": "Model A"}
 
             else:
-              predictions = self.model_b.predict(model_input.drop(["Id"], axis=1))
-              return {"Prediction": predictions[0], "model": "Model B"}
-          
+                predictions = self.model_b.predict(model_input.drop(["Id"], axis=1))
+                return {"Prediction": predictions[0], "model": "Model B"}
+
         else:
             raise ValueError("Input must be a pandas DataFrame.")
+
 
 # COMMAND ----------
 
 # Add Id and columns
-columns = ['Id', 'Limit_bal', 'Sex', 'Education', 'Marriage', 'Age', 'Pay_0',
-       'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6', 'Bill_amt1', 'Bill_amt2',
-       'Bill_amt3', 'Bill_amt4', 'Bill_amt5', 'Bill_amt6', 'Pay_amt1',
-       'Pay_amt2', 'Pay_amt3', 'Pay_amt4', 'Pay_amt5', 'Pay_amt6']
+columns = [
+    "Id",
+    "Limit_bal",
+    "Sex",
+    "Education",
+    "Marriage",
+    "Age",
+    "Pay_0",
+    "Pay_2",
+    "Pay_3",
+    "Pay_4",
+    "Pay_5",
+    "Pay_6",
+    "Bill_amt1",
+    "Bill_amt2",
+    "Bill_amt3",
+    "Bill_amt4",
+    "Bill_amt5",
+    "Bill_amt6",
+    "Pay_amt1",
+    "Pay_amt2",
+    "Pay_amt3",
+    "Pay_amt4",
+    "Pay_amt5",
+    "Pay_amt6",
+]
 
 X_train = train_set[columns]
 X_test = test_set[columns]
@@ -285,12 +292,11 @@ X_test = test_set[columns]
 
 # Run prediction on model A
 models = [model_A, model_B]
-wrapped_model = CreditDefaultModelWrapper(models)  
+wrapped_model = CreditDefaultModelWrapper(models)
 
 example_input = X_test.iloc[0:1]  # Select row hashed for mdoel A
 
-example_prediction = wrapped_model.predict(context=None, 
-                                           model_input=example_input)
+example_prediction = wrapped_model.predict(context=None, model_input=example_input)
 
 print("Example Prediction:", example_prediction)
 
@@ -298,44 +304,35 @@ print("Example Prediction:", example_prediction)
 
 # Run prediction on model B
 models = [model_A, model_B]
-wrapped_model = CreditDefaultModelWrapper(models)  
+wrapped_model = CreditDefaultModelWrapper(models)
 
 example_input = X_test.iloc[8:9]  # Select row hashed for mdoel B
 
-example_prediction = wrapped_model.predict(context=None, 
-                                           model_input=example_input)
+example_prediction = wrapped_model.predict(context=None, model_input=example_input)
 
 print("Example Prediction:", example_prediction)
 
 # COMMAND ----------
 
-# Now we register our wrapped model 
+# Now we register our wrapped model
 
 mlflow.set_experiment(experiment_name="/Shared/credit_default-ab-testing")
 model_name = f"{catalog_name}.{schema_name}.credit_default_model_pyfunc_ab_test"
 
 with mlflow.start_run() as run:
     run_id = run.info.run_id
-    signature = infer_signature(model_input=X_train,
-                                model_output={"Prediction": 0,
-                                              "model": "Model B"})
-    
-    dataset = mlflow.data.from_spark(train_set_spark,
-                                     table_name=f"{catalog_name}.{schema_name}.train_set",
-                                     version="0")
-    
+    signature = infer_signature(model_input=X_train, model_output={"Prediction": 0, "model": "Model B"})
+
+    dataset = mlflow.data.from_spark(train_set_spark, table_name=f"{catalog_name}.{schema_name}.train_set", version="0")
+
     mlflow.log_input(dataset, context="training")
 
     mlflow.pyfunc.log_model(
-        python_model=wrapped_model,
-        artifact_path="pyfunc-credit_default-model-ab",
-        signature=signature
+        python_model=wrapped_model, artifact_path="pyfunc-credit_default-model-ab", signature=signature
     )
 model_version = mlflow.register_model(
-    model_uri=f"runs:/{run_id}/pyfunc-credit_default-model-ab",
-    name=model_name,
-    tags={"branch": "serving"}
-    )
+    model_uri=f"runs:/{run_id}/pyfunc-credit_default-model-ab", name=model_name, tags={"branch": "serving"}
+)
 
 # COMMAND ----------
 
@@ -377,7 +374,7 @@ workspace.serving_endpoints.create(
 
 # COMMAND ----------
 
-token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
+token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
 # COMMAND ----------
@@ -394,9 +391,7 @@ dataframe_records = [[record] for record in sampled_records]
 
 start_time = time.time()
 
-model_serving_endpoint = (
-    f"https://{host}/serving-endpoints/credit_default-model-serving-ab-test/invocations"
-)
+model_serving_endpoint = f"https://{host}/serving-endpoints/credit_default-model-serving-ab-test/invocations"
 
 response = requests.post(
     f"{model_serving_endpoint}",

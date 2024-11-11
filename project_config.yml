@@ -13,7 +13,7 @@ ab_test:
   learning_rate_a: 0.05
   learning_rate_b: 0.1
   force_col_wise: true
-  
+
 num_features:
   - name: ID
     dtype: int64
