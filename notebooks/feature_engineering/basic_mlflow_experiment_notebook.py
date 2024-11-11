@@ -25,11 +25,13 @@ print(CONFIG_DATABRICKS)
 print(PROFILE)
 
 # COMMAND ----------
+
 # tracking and registry URIs
 mlflow.set_tracking_uri(f"databricks://{PROFILE}")
 mlflow.set_registry_uri(f"databricks-uc://{PROFILE}")
 
 # COMMAND ----------
+
 # Load configuration from YAML file
 config = load_config(CONFIG_DATABRICKS)
 catalog_name = config.catalog_name
@@ -38,6 +40,7 @@ parameters = config.parameters
 
 
 # COMMAND ----------
+
 # Load training and testing sets from Databricks tables
 train_set_spark = spark.table(f"{catalog_name}.{schema_name}.train_set")
 
@@ -51,6 +54,7 @@ X_test = test_set.drop(columns=["Default", "Id", "Update_timestamp_utc"])
 y_test = test_set["Default"]
 
 # COMMAND ----------
+
 # Show train features
 X_train.head()
 
@@ -58,6 +62,7 @@ X_train.head()
 
 features_robust = config.features.robust
 print(features_robust)
+
 # COMMAND ----------
 
 
@@ -66,10 +71,11 @@ preprocessor = ColumnTransformer(
     remainder="passthrough",
 )
 
-# Create the pipeline with preprocessing and the LightGBM regressor
-pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("regressor", LGBMClassifier(**parameters))])
+# Create the pipeline with preprocessing and the LightGBM classifier
+pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMClassifier(**parameters))])
 
 # COMMAND ----------
+
 # Set up the experiment
 mlflow.set_experiment(experiment_name="/Shared/credit_default")
 
@@ -109,5 +115,3 @@ model_version = mlflow.register_model(
 # Optionally, save the model version information
 with open("model_version.json", "w") as json_file:
     json.dump(model_version.__dict__, json_file, indent=4)
-
-# COMMAND ----------

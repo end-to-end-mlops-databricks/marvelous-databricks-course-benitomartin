@@ -10,11 +10,9 @@ parameters:
   force_col_wise: true
 
 ab_test:
-  learning_rate_a: 0.02
-  learning_rate_b: 0.02
-  n_estimators: 1000
-  max_depth_a: 6
-  max_depth_b: 10
+  learning_rate_a: 0.05
+  learning_rate_b: 0.1
+  force_col_wise: true
   
 num_features:
   - name: ID

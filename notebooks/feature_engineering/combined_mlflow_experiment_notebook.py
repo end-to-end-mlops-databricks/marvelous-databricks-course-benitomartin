@@ -66,7 +66,7 @@ def create_pipeline(config, parameters):
         transformers=[("robust_scaler", RobustScaler(), features_robust)], remainder="passthrough"
     )
 
-    return Pipeline(steps=[("preprocessor", preprocessor), ("regressor", LGBMClassifier(**parameters))])
+    return Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMClassifier(**parameters))])
 
 
 def main():
@@ -141,5 +141,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# COMMAND ----------
