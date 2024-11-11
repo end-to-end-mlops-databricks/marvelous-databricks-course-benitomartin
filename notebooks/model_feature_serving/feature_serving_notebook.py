@@ -1,15 +1,15 @@
 # Databricks notebook source
 # dbutils.library.restartPython()
 
-%pip install --upgrade databricks-sdk
+# COMMAND ----------
+
+# MAGIC %pip install --upgrade databricks-sdk
 
 # COMMAND ----------
 
 # MAGIC %restart_python
 
 # COMMAND ----------
-
-
 
 """
 Create feature table in unity catalog, it will be a delta table
@@ -45,7 +45,7 @@ from credit_default.utils import load_config
 # COMMAND ----------
 
 config = load_config("/Volumes/mlops_students/benitomartin/config/project_config.yml")
-parameters = config.parameters
+
 print(config)
 
 
@@ -178,25 +178,25 @@ print(columns)
 
 # COMMAND ----------
 
-# Define features to look up from the feature table
+# # Define features to look up from the feature table
 
-columns_wo_id = ['Limit_bal', 'Sex', 'Education', 'Marriage', 'Age', 'Pay_0', 'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6', 'Bill_amt1', 'Bill_amt2', 'Bill_amt3', 'Bill_amt4', 'Bill_amt5', 'Bill_amt6', 'Pay_amt1', 'Pay_amt2', 'Pay_amt3', 'Pay_amt4', 'Pay_amt5', 'Pay_amt6']
+# columns_wo_id = ['Limit_bal', 'Sex', 'Education', 'Marriage', 'Age', 'Pay_0', 'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6', 'Bill_amt1', 'Bill_amt2', 'Bill_amt3', 'Bill_amt4', 'Bill_amt5', 'Bill_amt6', 'Pay_amt1', 'Pay_amt2', 'Pay_amt3', 'Pay_amt4', 'Pay_amt5', 'Pay_amt6']
 
 
-features = [
-    FeatureLookup(
-        table_name=feature_table_name, 
-        lookup_key="Id", 
-        feature_names=columns_wo_id + ["Predicted_Default"]
-    )
-]
+# features = [
+#     FeatureLookup(
+#         table_name=feature_table_name, 
+#         lookup_key="Id", 
+#         feature_names=columns_wo_id + ["Predicted_Default"]
+#     )
+# ]
 
-# Create the feature spec for serving (this can be found in the catalog under functions)
+# # Create the feature spec for serving (this can be found in the catalog under functions)
 feature_spec_name = f"{catalog_name}.{schema_name}.return_predictions"
 
-fe.create_feature_spec(name=feature_spec_name, 
-                       features=features, 
-                       exclude_columns=None)
+# fe.create_feature_spec(name=feature_spec_name, 
+#                        features=features, 
+#                        exclude_columns=None)
 
 # COMMAND ----------
 

@@ -3,7 +3,11 @@
 
 # COMMAND ----------
 
-# MAGIC %restart_python
+dbutils.library.restartPython()
+
+# COMMAND ----------
+
+!pip list
 
 # COMMAND ----------
 
@@ -53,6 +57,15 @@ schema_name = config.schema_name
 
 # COMMAND ----------
 
+## Can build endpoint with "pyarrow>=14.0.0, <15", for model creation
+## Used wheel version 0.0.9
+
+## Otherwise there is an error
+#22 99.07 The conflict is caused by:
+#22 99.07     The user requested pyarrow==15.0.2
+#22 99.07     mlflow 2.17.2 depends on pyarrow<18 and >=4.0.0
+#22 99.07     databricks-feature-lookup 1.2.0 depends on pyarrow==14.*
+
 workspace.serving_endpoints.create(
     name="credit-default-model-serving-feature",
     config=EndpointCoreConfigInput(
@@ -61,7 +74,7 @@ workspace.serving_endpoints.create(
                 entity_name=f"{catalog_name}.{schema_name}.credit_model_feature",
                 scale_to_zero_enabled=True,
                 workload_size="Small",
-                entity_version=1,
+                entity_version=2,
             )
         ]
     ),
@@ -71,14 +84,29 @@ workspace.serving_endpoints.create(
 
 ## Call the endpoint
 
-
 token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
 
 # COMMAND ----------
 
+# Removed columns used for training set creation (see below code) as this will be taken from feature lookup
+
 required_columns = ["Id"]
+
+## /feature_mlflow_experiment_notebook.py
+# training_set = fe.create_training_set(
+#     df=train_set,
+#     label="Default",
+#     feature_lookups=[
+#         FeatureLookup(
+#             table_name="mlops_students.benitomartin.features_balanced",
+#             feature_names=columns,
+#             lookup_key="Id",
+#         )
+#     ],
+#     exclude_columns=["Update_timestamp_utc"],
+# )
 
 # COMMAND ----------
 
@@ -118,4 +146,7 @@ print("Execution time:", execution_time, "seconds")
 
 # COMMAND ----------
 
+credit_features = spark.table(f"{catalog_name}.{schema_name}.features_balanced").toPandas()
+
+credit_features.dtypes
 
