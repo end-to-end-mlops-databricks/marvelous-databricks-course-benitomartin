@@ -27,7 +27,6 @@ class Config(BaseModel):
     parameters: Dict[str, Any] = Field(description="Parameters for model training")
     num_features: List[NumFeature]
     target: List[Target]
-    columns_to_drop: List[str]
     features: Features
 
 
@@ -54,7 +53,7 @@ def setup_logging(log_file: str, log_level: str = "DEBUG") -> None:
 
 def load_config(config_path: str) -> Config:
     try:
-        with open(config_path, "r") as f:
+        with open(config_path, "r", encoding="utf-8") as f:
             config_data = yaml.safe_load(f)
         config = Config(**config_data)  # Pydantic validation
         logger.info(f"Loaded configuration from {config_path}")

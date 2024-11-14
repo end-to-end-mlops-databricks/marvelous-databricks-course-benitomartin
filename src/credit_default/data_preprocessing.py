@@ -77,8 +77,17 @@ class DataPreprocessor:
                 - pd.Series: The target Series.
                 - ColumnTransformer: The preprocessor for scaling.
         """
-        logger.info("Retrieving processed data and preprocessor")
-        return self.X, self.y, self.preprocessor
+        try:
+            logger.info("Retrieving processed data and preprocessor")
+            logger.info(f"Feature columns in X: {self.X.columns.tolist()}")
+
+            # Log shapes of processed data
+            logger.info(f"Data preprocessing completed. Shape of X: {self.X.shape}, Shape of y: {self.y.shape}")
+
+            return self.X, self.y, self.preprocessor
+
+        except Exception as e:
+            logger.error(f"An error occurred during data preprocessing: {str(e)}")
 
 
 if __name__ == "__main__":
@@ -94,10 +103,6 @@ if __name__ == "__main__":
         preprocessor = DataPreprocessor(FILEPATH, config)
         X, y, preprocessor_model = preprocessor.get_processed_data()
 
-        logger.info(f"Feature columns in X: {X.columns.tolist()}")
-
-        # Log shapes of processed data
-        logger.info(f"Data preprocessing completed. Shape of X: {X.shape}, Shape of y: {y.shape}")
     except Exception as e:
         logger.error(f"An error occurred during data preprocessing: {str(e)}")
 

@@ -13,23 +13,29 @@ spark = SparkSession.builder.getOrCreate()
 # Load environment variables
 load_dotenv()
 
+
+# COMMAND ----------
+CONFIG_DATABRICKS = os.environ["CONFIG_DATABRICKS"]
+# Load configuration from YAML file
+config = load_config(CONFIG_DATABRICKS)
+
+print(config.catalog_name)
+print(config.schema_name)
+
+# COMMAND ----------
+
 # FILEPATH_DATABRICKS = os.environ["FILEPATH_DATABRICKS"]
-FILEPATH_DATABRICKS = "dbfs:/Volumes/maven/default/data/data.csv"
+FILEPATH_DATABRICKS = f"dbfs:/Volumes/{config.catalog_name}/{config.schema_name}/data/data.csv"
 PREPROCESSING_LOGS = os.environ["PREPROCESSING_LOGS"]
 # CONFIG = os.environ["CONFIG"]
 CONFIG_DATABRICKS = os.environ["CONFIG_DATABRICKS"]
 print(CONFIG_DATABRICKS)
 print(FILEPATH_DATABRICKS)
 
-# # COMMAND ----------
+# COMMAND ----------
 # from IPython.display import display
 
 # display(spark.read.csv(FILEPATH_DATABRICKS, header=True, inferSchema=True))
-
-# COMMAND ----------
-
-# Load configuration from YAML file
-config = load_config(CONFIG_DATABRICKS)
 
 # COMMAND ----------
 # Test the DataPreprocessor class
@@ -53,3 +59,5 @@ except Exception as e:
     logger.error(f"An error occurred: {str(e)}")
 
     logger.info("DataPreprocessor script completed")
+
+# COMMAND ----------

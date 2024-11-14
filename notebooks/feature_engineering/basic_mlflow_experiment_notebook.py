@@ -22,13 +22,16 @@ load_dotenv()
 CONFIG_DATABRICKS = os.environ["CONFIG_DATABRICKS"]
 PROFILE = os.environ["PROFILE"]
 print(CONFIG_DATABRICKS)
+print(PROFILE)
 
 # COMMAND ----------
+
 # tracking and registry URIs
 mlflow.set_tracking_uri(f"databricks://{PROFILE}")
 mlflow.set_registry_uri(f"databricks-uc://{PROFILE}")
 
 # COMMAND ----------
+
 # Load configuration from YAML file
 config = load_config(CONFIG_DATABRICKS)
 catalog_name = config.catalog_name
@@ -37,19 +40,21 @@ parameters = config.parameters
 
 
 # COMMAND ----------
+
 # Load training and testing sets from Databricks tables
 train_set_spark = spark.table(f"{catalog_name}.{schema_name}.train_set")
 
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
 
-X_train = train_set.drop(columns=["Default", "Update_timestamp_utc"])
+X_train = train_set.drop(columns=["Default", "Id", "Update_timestamp_utc"])
 y_train = train_set["Default"]
 
-X_test = test_set.drop(columns=["Default"])
+X_test = test_set.drop(columns=["Default", "Id", "Update_timestamp_utc"])
 y_test = test_set["Default"]
 
 # COMMAND ----------
+
 # Show train features
 X_train.head()
 
@@ -57,6 +62,7 @@ X_train.head()
 
 features_robust = config.features.robust
 print(features_robust)
+
 # COMMAND ----------
 
 
@@ -65,15 +71,16 @@ preprocessor = ColumnTransformer(
     remainder="passthrough",
 )
 
-# Create the pipeline with preprocessing and the LightGBM regressor
-pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("regressor", LGBMClassifier(**parameters))])
+# Create the pipeline with preprocessing and the LightGBM classifier
+pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMClassifier(**parameters))])
 
 # COMMAND ----------
+
 # Set up the experiment
 mlflow.set_experiment(experiment_name="/Shared/credit_default")
 
 # Start an MLflow run to track the training process
-with mlflow.start_run(tags={"branch": "mlflow"}) as run:
+with mlflow.start_run(tags={"branch": "serving"}) as run:
     run_id = run.info.run_id
 
     # Train the model

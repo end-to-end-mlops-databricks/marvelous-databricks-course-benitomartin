@@ -1,12 +1,22 @@
-catalog_name: maven
-schema_name: default
+# catalog_name: maven
+# schema_name: default
+
+catalog_name: mlops_students
+schema_name: benitomartin
 
 parameters:
   learning_rate: 0.05
   random_state: 42
   force_col_wise: true
 
+ab_test:
+  learning_rate_a: 0.05
+  learning_rate_b: 0.1
+  force_col_wise: true
+
 num_features:
+  - name: ID
+    dtype: int64
   - name: LIMIT_BAL
     dtype: float64
   - name: SEX
@@ -60,9 +70,7 @@ target:
     dtype: int64
     new_name: Default
 
-columns_to_drop:
-  - ID
-
+# Scaling Features
 features:
   robust:
     - Limit_bal

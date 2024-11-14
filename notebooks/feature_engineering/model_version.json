@@ -1,0 +1,18 @@
+{
+    "_name": "mlops_students.benitomartin.credit_default_model_pyfunc",
+    "_version": "2",
+    "_creation_time": 1731254378540,
+    "_last_updated_timestamp": 1731254383576,
+    "_description": "",
+    "_user_id": "benitomartin@martindatasol.com",
+    "_current_stage": null,
+    "_source": "dbfs:/databricks/mlflow-tracking/3745243706209060/36cc9c88b75b426cb4ff4812eba79839/artifacts/pyfunc_credit_default_model",
+    "_run_id": "36cc9c88b75b426cb4ff4812eba79839",
+    "_run_link": null,
+    "_status": "READY",
+    "_status_message": "",
+    "_tags": {
+        "branch": "serving"
+    },
+    "_aliases": []
+}
