@@ -3,6 +3,7 @@
 
 catalog_name: mlops_students
 schema_name: benitomartin
+pipeline_id: c62ac21f-10bb-431e-b286-4b283fe24b61 # Pipeline Id under "features_balanced_online" table in catalog
 
 parameters:
   learning_rate: 0.05
