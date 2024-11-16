@@ -1,5 +1,4 @@
 # Databricks notebook source
-# Databricks notebook source
 import numpy as np
 import pandas as pd
 from pyspark.sql import SparkSession
@@ -77,7 +76,16 @@ def create_synthetic_data(df, num_rows=100):
         elif pd.api.types.is_datetime64_any_dtype(df[column]):
             min_date, max_date = df[column].min(), df[column].max()
             if min_date < max_date:
-                synthetic_data[column] = pd.to_datetime(np.random.randint(min_date.value, max_date.value, num_rows))
+                # Ensure the timestamp is between max_date and current time
+                current_time = pd.to_datetime('now')
+                if max_date < current_time:
+                    timestamp_range_start = max_date.value
+                    timestamp_range_end = current_time.value
+                    synthetic_data[column] = pd.to_datetime(
+                        np.random.randint(timestamp_range_start, timestamp_range_end, num_rows)
+                    )
+                else:
+                    synthetic_data[column] = [max_date] * num_rows
             else:
                 synthetic_data[column] = [min_date] * num_rows
 
