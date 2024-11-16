@@ -31,7 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--root_path",
     action="store",
-    default=None,
+    default='',
     type=str,
     required=True,
 )
