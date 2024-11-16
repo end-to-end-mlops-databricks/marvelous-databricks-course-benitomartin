@@ -77,7 +77,7 @@ def create_synthetic_data(df, num_rows=100):
             min_date, max_date = df[column].min(), df[column].max()
             if min_date < max_date:
                 # Ensure the timestamp is between max_date and current time
-                current_time = pd.to_datetime('now')
+                current_time = pd.to_datetime("now")
                 if max_date < current_time:
                     timestamp_range_start = max_date.value
                     timestamp_range_end = current_time.value

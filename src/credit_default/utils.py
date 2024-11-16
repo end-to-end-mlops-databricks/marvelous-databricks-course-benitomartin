@@ -24,6 +24,7 @@ class Features(BaseModel):
 class Config(BaseModel):
     catalog_name: str
     schema_name: str
+    pipeline_id: str
     parameters: Dict[str, Any] = Field(description="Parameters for model training")
     ab_test: Dict[str, Any] = Field(description="Parameters for A/B testing")
     num_features: List[NumFeature]
