@@ -20,8 +20,10 @@ Workflow:
 
 import argparse
 
+from databricks.connect import DatabricksSession
 from databricks.sdk import WorkspaceClient
-from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+from pyspark.sql.functions import max as spark_max
 
 from credit_default.utils import load_config
 
@@ -40,9 +42,33 @@ args = parser.parse_args()
 root_path = args.root_path
 config_path = f"{root_path}/project_config.yml"
 config = load_config(config_path)
-pipeline_id = config.pipeline_id
+# pipeline_id = config.pipeline_id
 
-spark = SparkSession.builder.getOrCreate()
+# spark = SparkSession.builder.getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
+
 
 catalog_name = config.catalog_name
 schema_name = config.schema_name
+
+# Load source_data table
+source_data = spark.table(f"{catalog_name}.{schema_name}.source_data")
+
+# Get max update timestamps from existing data
+max_train_timestamp = (
+    spark.table(f"{catalog_name}.{schema_name}.train_set")
+    .select(spark_max("update_timestamp_utc").alias("max_update_timestamp"))
+    .collect()[0]["max_update_timestamp"]
+)
+
+max_test_timestamp = (
+    spark.table(f"{catalog_name}.{schema_name}.test_set")
+    .select(spark_max("update_timestamp_utc").alias("max_update_timestamp"))
+    .collect()[0]["max_update_timestamp"]
+)
+
+latest_timestamp = max(max_train_timestamp, max_test_timestamp)
+
+
+# Filter source_data for rows with update_timestamp_utc greater than the latest_timestamp
+new_data = source_data.filter(col("update_timestamp_utc") > latest_timestamp)

@@ -1,9 +1,9 @@
 # Databricks notebook source
 # Databricks notebook source
-import pandas as pd
 import numpy as np
+import pandas as pd
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import current_timestamp, to_utc_timestamp
+
 from credit_default.utils import load_config
 
 # COMMAND ----------
@@ -23,7 +23,7 @@ schema_name = config.schema_name
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
 combined_set = pd.concat([train_set, test_set], ignore_index=True)
-existing_ids = set(int(id) for id in combined_set['Id'])
+existing_ids = set(int(id) for id in combined_set["Id"])
 
 # COMMAND ----------
 
@@ -39,26 +39,29 @@ len(combined_set.Age.value_counts())
 
 # COMMAND ----------
 
-# Generate a dataframe with unique values for each column with few unique values   
+
+# Generate a dataframe with unique values for each column with few unique values
 def generate_unique_values_dataframe(df, columns):
     unique_values = {col: df[col].dropna().unique().tolist() for col in columns}
     return pd.DataFrame([unique_values])
+
 
 # Columns with few unique values (Age is the largest with 56 unique values)
 columns = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6", "Default"]
 
 result = generate_unique_values_dataframe(combined_set, columns)
-result
+print(result)
 
 # COMMAND ----------
+
 
 # Define function to create synthetic data without random state
 # This will add some data drift in the Bill_amt columns
 def create_synthetic_data(df, num_rows=100):
     synthetic_data = pd.DataFrame()
-    
+
     for column in df.columns:
-        if pd.api.types.is_numeric_dtype(df[column]) and column != 'Id':
+        if pd.api.types.is_numeric_dtype(df[column]) and column != "Id":
             # Check if the column has a small set of discrete values
             unique_values = df[column].unique()
             if len(unique_values) <= 10:  # Assume discrete values if there are 10 or fewer unique values
@@ -70,26 +73,24 @@ def create_synthetic_data(df, num_rows=100):
                 # This will add some data drift in the Bill_amt columns
                 mean, std = df[column].mean(), df[column].std()
                 synthetic_data[column] = np.round(np.random.normal(mean, std, num_rows)).astype(int).astype(float)
-        
+
         elif pd.api.types.is_datetime64_any_dtype(df[column]):
             min_date, max_date = df[column].min(), df[column].max()
             if min_date < max_date:
-                synthetic_data[column] = pd.to_datetime(
-                    np.random.randint(min_date.value, max_date.value, num_rows)
-                )
+                synthetic_data[column] = pd.to_datetime(np.random.randint(min_date.value, max_date.value, num_rows))
             else:
                 synthetic_data[column] = [min_date] * num_rows
 
     new_ids = []
     # The first synthetic Id must be one greater than the maximum existing Id. If no existing_ids, then starts from 1.
     i = max(existing_ids) + 1 if existing_ids else 1
-  
+
     while len(new_ids) < num_rows:
         if i not in existing_ids:
             new_ids.append(str(i))  # Convert numeric ID to string
         i += 1
-        
-    synthetic_data['Id'] = new_ids
+
+    synthetic_data["Id"] = new_ids
 
     return synthetic_data
 
@@ -112,12 +113,12 @@ synthetic_df.head()
 
 # COMMAND ----------
 
-combined_set.Bill_amt2	.min(), combined_set.Bill_amt2	.max()
+combined_set.Bill_amt2.min(), combined_set.Bill_amt2.max()
 
 # COMMAND ----------
 
 # Some values are outside the original column names (data drift)
-synthetic_df.Bill_amt2	.min(), synthetic_df.Bill_amt2	.max()
+synthetic_df.Bill_amt2.min(), synthetic_df.Bill_amt2.max()
 
 # COMMAND ----------
 
@@ -144,6 +145,4 @@ existing_schema = spark.table(f"{catalog_name}.{schema_name}.source_data").schem
 synthetic_spark_df = spark.createDataFrame(synthetic_df, schema=existing_schema)
 
 # Append synthetic data as new data to source_data table
-synthetic_spark_df.write.mode("append").saveAsTable(
-    f"{catalog_name}.{schema_name}.source_data"
-)
+synthetic_spark_df.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.source_data")
