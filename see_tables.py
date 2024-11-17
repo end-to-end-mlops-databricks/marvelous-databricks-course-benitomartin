@@ -22,6 +22,16 @@ features_balanced = spark.table(f"{catalog_name}.{schema_name}.features_balanced
 print(features_balanced)
 # COMMAND ----------
 
+# Check for duplicates in the 'Id' column
+duplicate_ids = features_balanced[features_balanced["Id"].duplicated()]
+
+if duplicate_ids.empty:
+    print("No duplicate IDs found.")
+else:
+    print(f"Duplicate IDs found:\n{duplicate_ids}")
+
+# COMMAND ----------
+
 # Load train and test sets
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
 # COMMAND ----------

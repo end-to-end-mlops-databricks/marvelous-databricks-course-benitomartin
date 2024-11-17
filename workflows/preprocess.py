@@ -19,6 +19,7 @@ Workflow:
 """
 
 import argparse
+import time
 
 # from pyspark.sql import SparkSession
 from databricks.connect import DatabricksSession
@@ -60,20 +61,20 @@ source_data = spark.table(f"{source_data_table_name}")
 # Get max update timestamps from existing data
 max_train_timestamp = (
     spark.table(f"{catalog_name}.{schema_name}.train_set")
-    .select(spark_max("update_timestamp_utc").alias("max_update_timestamp"))
+    .select(spark_max("Update_timestamp_utc").alias("max_update_timestamp"))
     .collect()[0]["max_update_timestamp"]
 )
 
 max_test_timestamp = (
     spark.table(f"{catalog_name}.{schema_name}.test_set")
-    .select(spark_max("update_timestamp_utc").alias("max_update_timestamp"))
+    .select(spark_max("Update_timestamp_utc").alias("max_update_timestamp"))
     .collect()[0]["max_update_timestamp"]
 )
 
 latest_timestamp = max(max_train_timestamp, max_test_timestamp)
 
 # Filter source_data for rows with update_timestamp_utc greater than the latest_timestamp
-new_data = source_data.filter(col("update_timestamp_utc") > latest_timestamp)
+new_data = source_data.filter(col("Update_timestamp_utc") > latest_timestamp)
 
 logger.info(f"Loading {new_data.count()} data from {source_data_table_name}")
 
@@ -92,26 +93,53 @@ affected_rows_test = new_data_test.count()
 logger.info(f"New train data {affected_rows_train}")
 logger.info(f"New test data {affected_rows_test}")
 
-# write into feature table; update online table
+columns = config.features.clean
+
+# Write into feature table; update online table
 if affected_rows_train > 0 or affected_rows_test > 0:
+    # Construct the column selection part of the query
+    columns_str = ", ".join(f"s.{col}" for col in columns)
+
+    # Get all new records that need to be added to feature table
     spark.sql(f"""
-        WITH max_timestamp AS (
-            SELECT MAX(update_timestamp_utc) AS max_update_timestamp
-            FROM {catalog_name}.{schema_name}.train_set
-        )
         INSERT INTO {catalog_name}.{schema_name}.features_balanced
-        SELECT Id
-        FROM {catalog_name}.{schema_name}.train_set
-        WHERE update_timestamp_utc == (SELECT max_update_timestamp FROM max_timestamp)
+        SELECT DISTINCT {columns_str}
+        FROM {catalog_name}.{schema_name}.source_data s
+        JOIN (
+            SELECT Id, Update_timestamp_utc
+            FROM {catalog_name}.{schema_name}.train_set
+            WHERE Update_timestamp_utc > '{latest_timestamp}'
+            UNION ALL
+            SELECT Id, Update_timestamp_utc
+            FROM {catalog_name}.{schema_name}.test_set
+            WHERE Update_timestamp_utc > '{latest_timestamp}'
+        ) new_records
+        ON s.Id = new_records.Id
+        WHERE s.Update_timestamp_utc > '{latest_timestamp}'
     """)
 
-    spark.sql(f"""
-        WITH max_timestamp AS (
-            SELECT MAX(update_timestamp_utc) AS max_update_timestamp
-            FROM {catalog_name}.{schema_name}.test_set
-        )
-        INSERT INTO {catalog_name}.{schema_name}.features_balanced
-        SELECT Id
-        FROM {catalog_name}.{schema_name}.test_set
-        WHERE update_timestamp_utc == (SELECT max_update_timestamp FROM max_timestamp)
-    """)
+    refreshed = 1
+
+    # This updates the "online" feature table with the new data from the "offline" feature table.
+    # full_refresh=False means the pipeline will incrementally update the data.
+    # This allows the pipeline to update only the new or changed records,
+    # which can be much more efficient than a full refresh, especially for large datasets.
+    update_response = workspace.pipelines.start_update(pipeline_id=pipeline_id, full_refresh=False)
+
+    while True:
+        update_info = workspace.pipelines.get_update(pipeline_id=pipeline_id, update_id=update_response.update_id)
+        state = update_info.update.state.value
+        if state == "COMPLETED":
+            break
+        elif state in ["FAILED", "CANCELED"]:
+            raise SystemError("Online table failed to update.")
+        elif state == "WAITING_FOR_RESOURCES":
+            print("Pipeline is waiting for resources.")
+        else:
+            print(f"Pipeline is in {state} state.")
+        time.sleep(30)
+
+else:
+    refreshed = 0
+
+dbutils.jobs.taskValues.set(key="refreshed", value=refreshed)  # noqa: F821
