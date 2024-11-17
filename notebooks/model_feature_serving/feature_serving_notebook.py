@@ -148,7 +148,7 @@ spec = OnlineTableSpec(
 # COMMAND ----------
 
 # print(workspace.online_tables.get(name=online_table_name))
-spec
+print(spec)
 
 # COMMAND ----------
 
@@ -197,11 +197,7 @@ columns_wo_id = columns.copy()
 columns_wo_id.remove("Id")
 
 features = [
-    FeatureLookup(
-        table_name=feature_table_name,
-        lookup_key="Id",
-        feature_names=columns_wo_id + ["Predicted_Default"]
-    )
+    FeatureLookup(table_name=feature_table_name, lookup_key="Id", feature_names=columns_wo_id + ["Predicted_Default"])
 ]
 
 # COMMAND ----------
@@ -241,7 +237,6 @@ workspace.serving_endpoints.create(
 token = dbutils.secrets.get(scope="secret-scope", key="databricks-token")  # noqa: F821
 
 host = spark.conf.get("spark.databricks.workspaceUrl")
-
 
 
 # COMMAND ----------

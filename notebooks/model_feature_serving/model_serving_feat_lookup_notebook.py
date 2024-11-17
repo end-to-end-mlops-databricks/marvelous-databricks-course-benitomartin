@@ -15,13 +15,13 @@ import time
 
 import requests
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
-from pyspark.sql import SparkSession
 from databricks.sdk.service.catalog import (
     OnlineTable,
     OnlineTableSpec,
     OnlineTableSpecTriggeredSchedulingPolicy,
 )
+from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
+from pyspark.sql import SparkSession
 
 from credit_default.utils import load_config
 

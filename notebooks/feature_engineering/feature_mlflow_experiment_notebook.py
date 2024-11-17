@@ -13,7 +13,6 @@ from databricks.feature_store import FeatureLookup
 from imblearn.over_sampling import SMOTE
 from lightgbm import LGBMClassifier
 from mlflow.models import infer_signature
-
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from sklearn.compose import ColumnTransformer

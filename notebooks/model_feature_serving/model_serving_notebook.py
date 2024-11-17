@@ -5,12 +5,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.serving import (
-    EndpointCoreConfigInput,
-    ServedEntityInput,
-    TrafficConfig,
-    Route,
-)
 from pyspark.sql import SparkSession
 
 from credit_default.utils import load_config
@@ -195,4 +189,3 @@ average_latency = sum(latencies) / len(latencies)
 
 print("\nTotal execution time:", total_execution_time, "seconds")
 print("Average latency per request:", average_latency, "seconds")
-
