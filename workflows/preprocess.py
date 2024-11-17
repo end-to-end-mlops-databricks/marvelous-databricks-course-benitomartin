@@ -91,3 +91,27 @@ affected_rows_test = new_data_test.count()
 
 logger.info(f"New train data {affected_rows_train}")
 logger.info(f"New test data {affected_rows_test}")
+
+# write into feature table; update online table
+if affected_rows_train > 0 or affected_rows_test > 0:
+    spark.sql(f"""
+        WITH max_timestamp AS (
+            SELECT MAX(update_timestamp_utc) AS max_update_timestamp
+            FROM {catalog_name}.{schema_name}.train_set
+        )
+        INSERT INTO {catalog_name}.{schema_name}.features_balanced
+        SELECT Id
+        FROM {catalog_name}.{schema_name}.train_set
+        WHERE update_timestamp_utc == (SELECT max_update_timestamp FROM max_timestamp)
+    """)
+
+    spark.sql(f"""
+        WITH max_timestamp AS (
+            SELECT MAX(update_timestamp_utc) AS max_update_timestamp
+            FROM {catalog_name}.{schema_name}.test_set
+        )
+        INSERT INTO {catalog_name}.{schema_name}.features_balanced
+        SELECT Id
+        FROM {catalog_name}.{schema_name}.test_set
+        WHERE update_timestamp_utc == (SELECT max_update_timestamp FROM max_timestamp)
+    """)

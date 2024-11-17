@@ -1,13 +1,16 @@
 # Databricks notebook source
 import numpy as np
 import pandas as pd
-from pyspark.sql import SparkSession
+
+# from pyspark.sql import SparkSession
+from databricks.connect import DatabricksSession
 
 from credit_default.utils import load_config
 
 # COMMAND ----------
 
-spark = SparkSession.builder.getOrCreate()
+# spark = SparkSession.builder.getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
 
 # COMMAND ----------
 
@@ -17,33 +20,31 @@ catalog_name = config.catalog_name
 schema_name = config.schema_name
 
 # COMMAND ----------
+# 37354
+# Load train and test sets
+features_balanced = spark.table(f"{catalog_name}.{schema_name}.features_balanced").toPandas()
+existing_ids = set(int(id) for id in features_balanced["Id"])
+
+# COMMAND ----------
+len(existing_ids)
+
+# COMMAND ----------
+
+min(existing_ids), max(existing_ids)
+# COMMAND ----------
+
+
+# Generate a dataframe with unique values for each column with few unique values
+# to identify the discrete values
+def generate_unique_values_dataframe(df, columns):
+    unique_values = {col: df[col].dropna().unique().tolist() for col in columns}
+    return pd.DataFrame([unique_values])
+
 
 # Load train and test sets
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
 test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
 combined_set = pd.concat([train_set, test_set], ignore_index=True)
-existing_ids = set(int(id) for id in combined_set["Id"])
-
-# COMMAND ----------
-
-combined_set.head()
-
-# COMMAND ----------
-
-combined_set.info()
-
-# COMMAND ----------
-
-len(combined_set.Age.value_counts())
-
-# COMMAND ----------
-
-
-# Generate a dataframe with unique values for each column with few unique values
-def generate_unique_values_dataframe(df, columns):
-    unique_values = {col: df[col].dropna().unique().tolist() for col in columns}
-    return pd.DataFrame([unique_values])
-
 
 # Columns with few unique values (Age is the largest with 56 unique values)
 columns = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6", "Default"]
@@ -64,6 +65,7 @@ def create_synthetic_data(df, num_rows=100):
             # Check if the column has a small set of discrete values
             unique_values = df[column].unique()
             if len(unique_values) <= 10:  # Assume discrete values if there are 10 or fewer unique values
+                # This includes all above columns except "Age"
                 synthetic_data[column] = np.random.choice(unique_values, num_rows)
             elif column.startswith("Pay_amt"):  # Ensure positive values for "Pay_amt" columns
                 mean, std = df[column].mean(), df[column].std()
@@ -90,7 +92,7 @@ def create_synthetic_data(df, num_rows=100):
                 synthetic_data[column] = [min_date] * num_rows
 
     new_ids = []
-    # The first synthetic Id must be one greater than the maximum existing Id. If no existing_ids, then starts from 1.
+    # The first synthetic Id must be one greater than the maximum existing Id of the whole dataframe (train + test). If no existing_ids, then starts from 1.
     i = max(existing_ids) + 1 if existing_ids else 1
 
     while len(new_ids) < num_rows:
@@ -117,7 +119,7 @@ synthetic_df = synthetic_df[columns]
 
 # COMMAND ----------
 
-synthetic_df.head()
+synthetic_df.tail()
 
 # COMMAND ----------
 

@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 import pandas as pd
+from databricks.connect import DatabricksSession
 from dotenv import load_dotenv
 from loguru import logger
 from pydantic import ValidationError
@@ -13,7 +14,8 @@ from credit_default.utils import Config, Target
 # Load environment variables
 load_dotenv()
 
-spark = SparkSession.builder.getOrCreate()
+# spark = SparkSession.builder.getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
 
 FILEPATH_DATABRICKS = os.environ["FILEPATH_DATABRICKS"]
 CLEANING_LOGS = os.environ["CLEANING_LOGS"]

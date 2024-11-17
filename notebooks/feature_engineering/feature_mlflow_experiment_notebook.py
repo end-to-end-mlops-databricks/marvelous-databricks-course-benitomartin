@@ -9,11 +9,13 @@ IN VSCODE WON'T WORK
 import mlflow
 import pandas as pd
 from databricks import feature_engineering
+from databricks.connect import DatabricksSession
 from databricks.feature_store import FeatureLookup
 from imblearn.over_sampling import SMOTE
 from lightgbm import LGBMClassifier
 from mlflow.models import infer_signature
-from pyspark.sql import SparkSession
+
+# from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score
@@ -24,14 +26,15 @@ from credit_default.utils import load_config
 
 # COMMAND ----------
 
-config = load_config("/Volumes/mlops_students/benitomartin/config/project_config.yml")
+config = load_config("../../project_config.yml")
 parameters = config.parameters
 print(config)
 
 # COMMAND ----------
 
 # Initialize Spark and feature engineering client
-spark = SparkSession.builder.getOrCreate()
+# spark = SparkSession.builder.getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
 fe = feature_engineering.FeatureEngineeringClient()
 
 
@@ -65,11 +68,9 @@ columns = [
 ]
 
 # COMMAND ----------
-
-
 # First, create the feature table with original data
 create_table_sql = f"""
-CREATE OR REPLACE TABLE mlops_students.benitomartin.features_balanced
+CREATE OR REPLACE TABLE {config.catalog_name}.{config.schema_name}.features_balanced
 (Id STRING NOT NULL,
  {', '.join([f'{col} DOUBLE' for col in columns])})
 """
@@ -77,15 +78,18 @@ spark.sql(create_table_sql)
 
 # Add primary key and enable CDF
 spark.sql(
-    "ALTER TABLE mlops_students.benitomartin.features_balanced ADD CONSTRAINT features_balanced_pk PRIMARY KEY(Id);"
+    f"ALTER TABLE {config.catalog_name}.{config.schema_name}.features_balanced ADD CONSTRAINT features_balanced_pk PRIMARY KEY(Id);"
 )
 spark.sql(
-    "ALTER TABLE mlops_students.benitomartin.features_balanced SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
+    f"ALTER TABLE {config.catalog_name}.{config.schema_name}.features_balanced SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
 )
 
 # Convert Spark DataFrame to Pandas for SMOTE
-train_pdf = spark.table("mlops_students.benitomartin.train_set").toPandas()
+train_pdf = spark.table(f"{config.catalog_name}.{config.schema_name}.train_set").toPandas()
+# COMMAND ----------
+train_pdf.head()
 
+# COMMAND ----------
 # Separate features and target
 X = train_pdf[columns]
 y = train_pdf["Default"]
@@ -94,14 +98,23 @@ y = train_pdf["Default"]
 smote = SMOTE(random_state=42)
 X_balanced, y_balanced = smote.fit_resample(X, y)
 
-# Create balanced DataFrame
+# Create balanced DataFrame using only the train_set
 balanced_df = pd.DataFrame(X_balanced, columns=columns)
 
 # Identify the number of original samples
 num_original_samples = len(train_pdf)
 
 # Retain original Ids for the real samples and create new Ids for synthetic samples
-balanced_df["Id"] = train_pdf["Id"].values.tolist() + [f"id_{i}" for i in range(num_original_samples, len(balanced_df))]
+# Start with 30001 to avoid conflicts with existing Ids
+balanced_df["Id"] = train_pdf["Id"].values.tolist() + [
+    str(i) for i in range(30001, 30001 + len(balanced_df) - num_original_samples)
+]
+
+
+# COMMAND ----------
+# Check order os rows is unchanged
+len(balanced_df)
+# COMMAND ----------
 
 # Convert back to Spark DataFrame and insert into feature table
 balanced_spark_df = spark.createDataFrame(balanced_df)
@@ -112,7 +125,24 @@ columns_to_cast = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay
 for column in columns_to_cast:
     balanced_spark_df = balanced_spark_df.withColumn(column, F.col(column).cast("double"))
 
-balanced_spark_df.write.format("delta").mode("append").saveAsTable("mlops_students.benitomartin.features_balanced")
+balanced_spark_df.write.format("delta").mode("overwrite").saveAsTable(
+    f"{config.catalog_name}.{config.schema_name}.features_balanced"
+)
+
+# COMMAND ----------
+# Execute SQL to count rows
+row_count = spark.sql(
+    f"SELECT COUNT(*) AS row_count FROM {config.catalog_name}.{config.schema_name}.features_balanced"
+).collect()[0]["row_count"]
+print(f"The table has {row_count} rows.")
+# COMMAND ----------
+# Check for duplicates in the 'Id' column
+duplicate_ids = balanced_df[balanced_df["Id"].duplicated()]
+
+if duplicate_ids.empty:
+    print("No duplicate IDs found.")
+else:
+    print(f"Duplicate IDs found:\n{duplicate_ids}")
 
 # COMMAND ----------
 
@@ -122,7 +152,7 @@ balanced_spark_df.write.format("delta").mode("append").saveAsTable("mlops_studen
 columns_to_drop = columns + ["Update_timestamp_utc"]
 
 # Drop the specified columns from the train_set
-train_set = spark.table("mlops_students.benitomartin.train_set").drop(*columns_to_drop)
+train_set = spark.table(f"{config.catalog_name}.{config.schema_name}.train_set").drop(*columns_to_drop)
 
 
 # COMMAND ----------
@@ -135,7 +165,7 @@ training_set = fe.create_training_set(
     label="Default",
     feature_lookups=[
         FeatureLookup(
-            table_name="mlops_students.benitomartin.features_balanced",
+            table_name=f"{config.catalog_name}.{config.schema_name}.features_balanced",
             feature_names=columns,
             lookup_key="Id",
         )
@@ -148,7 +178,7 @@ training_set = fe.create_training_set(
 
 # Load feature-engineered DataFrame
 training_df = training_set.load_df().toPandas()
-test_set = spark.table("mlops_students.benitomartin.test_set").toPandas()
+test_set = spark.table(f"{config.catalog_name}.{config.schema_name}.test_set").toPandas()
 
 # Split features and target (exclude 'Id' from features)
 X_train = training_df[columns]
@@ -220,5 +250,6 @@ print(training_df.columns)
 # COMMAND ----------
 
 mlflow.register_model(
-    model_uri=f"runs:/{run_id}/lightgbm-pipeline-model-feature", name="mlops_students.benitomartin.credit_model_feature"
+    model_uri=f"runs:/{run_id}/lightgbm-pipeline-model-feature",
+    name=f"{config.catalog_name}.{config.schema_name}.credit_model_feature",
 )

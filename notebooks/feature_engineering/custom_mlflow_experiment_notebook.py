@@ -4,27 +4,29 @@ import os
 
 import mlflow
 import pandas as pd
+
+# from pyspark.sql import SparkSession
+from databricks.connect import DatabricksSession
 from dotenv import load_dotenv
 from mlflow import MlflowClient
 from mlflow.models import infer_signature
-from pyspark.sql import SparkSession
 
 from credit_default.utils import load_config
 
-spark = SparkSession.builder.getOrCreate()
+# spark = SparkSession.builder.getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
 
 # Load environment variables
 load_dotenv()
 
 CONFIG_DATABRICKS = os.environ["CONFIG_DATABRICKS"]
-PROFILE = os.environ["PROFILE"]
 print(CONFIG_DATABRICKS)
 
 # COMMAND ----------
 
 # Tracking and registry URIs
-mlflow.set_tracking_uri(f"databricks://{PROFILE}")
-mlflow.set_registry_uri(f"databricks-uc://{PROFILE}")
+mlflow.set_tracking_uri("databricks")
+mlflow.set_registry_uri("databricks-uc")
 client = MlflowClient()
 
 # COMMAND ----------
@@ -117,7 +119,7 @@ with mlflow.start_run(tags={"branch": "serving"}) as run:
     mlflow.pyfunc.log_model(
         python_model=wrapped_model,
         artifact_path="pyfunc_credit_default_model",
-        code_paths=["wheel/credit_default_databricks-0.0.8-py3-none-any.whl"],
+        code_paths=["wheel/credit_default_databricks-0.0.9-py3-none-any.whl"],
         signature=signature,
     )
 
@@ -142,7 +144,7 @@ with open("model_version.json", "w") as json_file:
 # COMMAND ----------
 
 model_version_alias = "the_best_model"
-client.set_registered_model_alias(model_name, model_version_alias, "1")
+client.set_registered_model_alias(model_name, model_version_alias, "2")
 
 model_uri = f"models:/{model_name}@{model_version_alias}"
 model = mlflow.pyfunc.load_model(model_uri)
@@ -150,3 +152,5 @@ model = mlflow.pyfunc.load_model(model_uri)
 # COMMAND ----------
 
 client.get_model_version_by_alias(model_name, model_version_alias)
+
+# COMMAND ----------

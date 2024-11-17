@@ -39,6 +39,8 @@ cat ~/.databrickscfg
 
 # Root Dir
 databricks fs ls dbfs:/
+
+export DATABRICKS_CONFIG_PROFILE=DEFAULT
 ```
 
 ### Catalog Creation

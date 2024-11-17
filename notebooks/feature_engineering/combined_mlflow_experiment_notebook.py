@@ -4,11 +4,13 @@ import os
 
 import mlflow
 import pandas as pd
+
+# from pyspark.sql import SparkSession
+from databricks.connect import DatabricksSession
 from dotenv import load_dotenv
 from lightgbm import LGBMClassifier
 from mlflow import MlflowClient
 from mlflow.models import infer_signature
-from pyspark.sql import SparkSession
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score
 from sklearn.pipeline import Pipeline
@@ -32,14 +34,14 @@ class CreditDefaultModelWrapper(mlflow.pyfunc.PythonModel):
 
 
 def setup_environment():
-    spark = SparkSession.builder.getOrCreate()
+    # spark = SparkSession.builder.getOrCreate()
+    spark = DatabricksSession.builder.getOrCreate()
 
     CONFIG_DATABRICKS = os.environ["CONFIG_DATABRICKS"]
-    PROFILE = os.environ["PROFILE"]
 
     # Set up MLflow
-    mlflow.set_tracking_uri(f"databricks://{PROFILE}")
-    mlflow.set_registry_uri(f"databricks-uc://{PROFILE}")
+    mlflow.set_tracking_uri("databricks")
+    mlflow.set_registry_uri("databricks-uc")
 
     return spark, CONFIG_DATABRICKS
 
@@ -84,7 +86,7 @@ def main():
     # Training and logging
     mlflow.set_experiment(experiment_name="/Shared/credit_default")
 
-    with mlflow.start_run(tags={"branch": "mlflow"}) as run:
+    with mlflow.start_run(tags={"branch": "serving"}) as run:
         run_id = run.info.run_id
 
         # Train the model
@@ -120,7 +122,7 @@ def main():
         mlflow.pyfunc.log_model(
             python_model=wrapped_model,
             artifact_path="pyfunc_credit_default_model",
-            code_paths=["wheel/credit_default_databricks-0.0.7-py3-none-any.whl"],
+            code_paths=["wheel/credit_default_databricks-0.0.9-py3-none-any.whl"],
             signature=signature,
         )
 
@@ -132,7 +134,7 @@ def main():
 
         # Set alias
         model_version_alias = "the_best_model"
-        client.set_registered_model_alias(model_name, model_version_alias, "1")
+        client.set_registered_model_alias(model_name, model_version_alias, "4")
 
         # Save model version info
         with open("model_version.json", "w") as json_file:
@@ -141,3 +143,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# COMMAND ----------
