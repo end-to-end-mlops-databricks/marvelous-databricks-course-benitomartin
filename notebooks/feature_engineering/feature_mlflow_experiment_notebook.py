@@ -9,13 +9,12 @@ IN VSCODE WON'T WORK
 import mlflow
 import pandas as pd
 from databricks import feature_engineering
-from databricks.connect import DatabricksSession
 from databricks.feature_store import FeatureLookup
 from imblearn.over_sampling import SMOTE
 from lightgbm import LGBMClassifier
 from mlflow.models import infer_signature
 
-# from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score
@@ -33,8 +32,7 @@ print(config)
 # COMMAND ----------
 
 # Initialize Spark and feature engineering client
-# spark = SparkSession.builder.getOrCreate()
-spark = DatabricksSession.builder.getOrCreate()
+spark = SparkSession.builder.getOrCreate()
 fe = feature_engineering.FeatureEngineeringClient()
 
 
@@ -68,6 +66,7 @@ columns = [
 ]
 
 # COMMAND ----------
+
 # First, create the feature table with original data
 create_table_sql = f"""
 CREATE OR REPLACE TABLE {config.catalog_name}.{config.schema_name}.features_balanced
@@ -86,10 +85,13 @@ spark.sql(
 
 # Convert Spark DataFrame to Pandas for SMOTE
 train_pdf = spark.table(f"{config.catalog_name}.{config.schema_name}.train_set").toPandas()
+
 # COMMAND ----------
+
 train_pdf.head()
 
 # COMMAND ----------
+
 # Separate features and target
 X = train_pdf[columns]
 y = train_pdf["Default"]
@@ -112,8 +114,10 @@ balanced_df["Id"] = train_pdf["Id"].values.tolist() + [
 
 
 # COMMAND ----------
+
 # Check order os rows is unchanged
 len(balanced_df)
+
 # COMMAND ----------
 
 # Convert back to Spark DataFrame and insert into feature table
@@ -130,12 +134,15 @@ balanced_spark_df.write.format("delta").mode("overwrite").saveAsTable(
 )
 
 # COMMAND ----------
+
 # Execute SQL to count rows
 row_count = spark.sql(
     f"SELECT COUNT(*) AS row_count FROM {config.catalog_name}.{config.schema_name}.features_balanced"
 ).collect()[0]["row_count"]
 print(f"The table has {row_count} rows.")
+
 # COMMAND ----------
+
 # Check for duplicates in the 'Id' column
 duplicate_ids = balanced_df[balanced_df["Id"].duplicated()]
 
