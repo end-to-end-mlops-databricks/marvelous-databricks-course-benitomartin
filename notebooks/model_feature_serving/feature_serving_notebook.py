@@ -1,13 +1,9 @@
 # Databricks notebook source
-# dbutils.library.restartPython()
-
-# COMMAND ----------
-
 # MAGIC %pip install --upgrade databricks-sdk
 
 # COMMAND ----------
 
-# MAGIC %restart_python
+# %dbutils.library.restartPython()
 
 # COMMAND ----------
 
@@ -30,8 +26,10 @@ import mlflow
 import pandas as pd
 import requests
 from databricks import feature_engineering
+from databricks.feature_engineering import FeatureLookup
 from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.catalog import (
+    OnlineTable,
     OnlineTableSpec,
     OnlineTableSpecTriggeredSchedulingPolicy,
 )
@@ -95,32 +93,7 @@ pipeline = mlflow.sklearn.load_model(f"models:/{catalog_name}.{schema_name}.cred
 # COMMAND ----------
 
 # Define
-columns = [
-    "Id",
-    "Limit_bal",
-    "Sex",
-    "Education",
-    "Marriage",
-    "Age",
-    "Pay_0",
-    "Pay_2",
-    "Pay_3",
-    "Pay_4",
-    "Pay_5",
-    "Pay_6",
-    "Bill_amt1",
-    "Bill_amt2",
-    "Bill_amt3",
-    "Bill_amt4",
-    "Bill_amt5",
-    "Bill_amt6",
-    "Pay_amt1",
-    "Pay_amt2",
-    "Pay_amt3",
-    "Pay_amt4",
-    "Pay_amt5",
-    "Pay_amt6",
-]
+columns = config.features.clean
 
 # COMMAND ----------
 
@@ -174,16 +147,33 @@ spec = OnlineTableSpec(
 
 # COMMAND ----------
 
+# print(workspace.online_tables.get(name=online_table_name))
+spec
+
+# COMMAND ----------
+
 # Create the online table in Databricks
+on_table = OnlineTable(name=online_table_name, spec=spec)
+print(on_table.as_dict())
+
+# COMMAND ----------
+
+# workspace.online_tables.delete(online_table_name)
+
+# COMMAND ----------
+
+# Create the online table in Databricks
+on_table = OnlineTable(name=online_table_name, spec=spec)
 
 # ignore "already exists" error
 try:
-    online_table_pipeline = workspace.online_tables.create(name=online_table_name, spec=spec)
+    # Convert OnlineTable to dictionary before passing to create
+    online_table_dict = on_table.as_dict()
+    online_table_pipeline = workspace.online_tables.create(table=online_table_dict)
 
 except Exception as e:
     if "already exists" in str(e):
         pass
-
     else:
         raise e
 
@@ -192,26 +182,34 @@ print(workspace.online_tables.get(online_table_name))
 
 # COMMAND ----------
 
+# Pipeline_id to be added into the project_config.yml
+print(workspace.online_tables.get(online_table_name).spec.pipeline_id)
+
+# COMMAND ----------
+
 print(columns)
 
 # COMMAND ----------
 
-# # Define features to look up from the feature table
+# Define features to look up from the feature table
 
-# columns_wo_id = ['Limit_bal', 'Sex', 'Education', 'Marriage', 'Age', 'Pay_0', 'Pay_2', 'Pay_3', 'Pay_4', 'Pay_5', 'Pay_6', 'Bill_amt1', 'Bill_amt2', 'Bill_amt3', 'Bill_amt4', 'Bill_amt5', 'Bill_amt6', 'Pay_amt1', 'Pay_amt2', 'Pay_amt3', 'Pay_amt4', 'Pay_amt5', 'Pay_amt6']
+columns_wo_id = columns.copy()
+columns_wo_id.remove("Id")
 
+features = [
+    FeatureLookup(
+        table_name=feature_table_name,
+        lookup_key="Id",
+        feature_names=columns_wo_id + ["Predicted_Default"]
+    )
+]
 
-# features = [
-#     FeatureLookup(
-#         table_name=feature_table_name,
-#         lookup_key="Id",
-#         feature_names=columns_wo_id + ["Predicted_Default"]
-#     )
-# ]
+# COMMAND ----------
 
 # # Create the feature spec for serving (this can be found in the catalog under functions)
 feature_spec_name = f"{catalog_name}.{schema_name}.return_predictions"
 
+## Uncomment only the first time it is created
 # fe.create_feature_spec(name=feature_spec_name,
 #                        features=features,
 #                        exclude_columns=None)
@@ -241,9 +239,13 @@ workspace.serving_endpoints.create(
 # and the host url of the endpoint
 # Ideally you get a token from the cloud provider
 
-token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
+# token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
+
+token = dbutils.secrets.get(scope="secret-scope", key="databricks-token")  # noqa: F821
 
 host = spark.conf.get("spark.databricks.workspaceUrl")
+
+
 
 # COMMAND ----------
 

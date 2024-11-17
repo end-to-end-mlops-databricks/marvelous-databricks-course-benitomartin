@@ -7,7 +7,7 @@
 
 catalog_name: credit
 schema_name: default
-pipeline_id: c62ac21f-10bb-431e-b286-4b283fe24b61 # Pipeline Id under "features_balanced_online" table in catalog
+pipeline_id: 541e84c0-ceaf-4111-a2c6-ea796a53eb7a # Pipeline Id under "features_balanced_online" table in catalog
 
 
 parameters:

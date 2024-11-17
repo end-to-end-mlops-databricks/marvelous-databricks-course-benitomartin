@@ -76,6 +76,22 @@ databricks fs cp dist/mlops_with_databricks-0.0.1-py3-none-any.whl dbfs:/Volumes
 databricks fs cp dist/credit_default_databricks-0.0.7-py3-none-any.whl dbfs:/Volumes/maven/default/packages --overwrite
 ```
 
+### Token Creation
+
+First create a token under Settings --> User --> Developer
+
+```
+# Create Scope
+databricks secrets create-scope secret-scope
+
+# Add secret after running command
+databricks secrets put-secret secret-scope data
+bricks-token
+
+# List secrets
+databricks secrets list-secrets secret-scope
+```
+
 ## Data
 
 Default of Credit Card Clients Dataset
@@ -86,6 +102,7 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Updated config class with A/B test params
 - Updated test data cleaning
 - Updated config file
+- Token creation
 
 
 ## Third PR - Branch: serving
