@@ -5,6 +5,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from databricks.sdk import WorkspaceClient
+from databricks.sdk.service.serving import (
+    EndpointCoreConfigInput,
+    ServedEntityInput,
+    TrafficConfig,
+    Route,
+)
 from pyspark.sql import SparkSession
 
 from credit_default.utils import load_config
@@ -16,7 +22,7 @@ spark = SparkSession.builder.getOrCreate()
 
 # COMMAND ----------
 
-config = load_config("/Volumes/mlops_students/benitomartin/config/project_config.yml")
+config = load_config("../../project_config.yml")
 parameters = config.parameters
 print(config)
 
@@ -27,7 +33,7 @@ schema_name = config.schema_name
 
 # COMMAND ----------
 
-print(catalog_name, schema_name)
+print(catalog_name), print(schema_name)
 
 # COMMAND ----------
 
@@ -95,12 +101,11 @@ train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
 
 ## Call the endpoint
 # Call The Endpoint
-# This will get a notebook token that is required
-# and the host url of the endpoint
-# Ideally you get a token from the cloud provider
 
+# token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
 
-token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
+token = dbutils.secrets.get(scope="secret-scope", key="databricks-token")  # noqa: F821
+
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
 # COMMAND ----------
@@ -109,39 +114,20 @@ print(host)
 
 # COMMAND ----------
 
-required_columns = [
-    "Limit_bal",
-    "Sex",
-    "Education",
-    "Marriage",
-    "Age",
-    "Pay_0",
-    "Pay_2",
-    "Pay_3",
-    "Pay_4",
-    "Pay_5",
-    "Pay_6",
-    "Bill_amt1",
-    "Bill_amt2",
-    "Bill_amt3",
-    "Bill_amt4",
-    "Bill_amt5",
-    "Bill_amt6",
-    "Pay_amt1",
-    "Pay_amt2",
-    "Pay_amt3",
-    "Pay_amt4",
-    "Pay_amt5",
-    "Pay_amt6",
-]
+# Get required columns
+
+columns = config.features.clean
+
+required_columns = columns.copy()
+required_columns.remove("Id")
 
 # COMMAND ----------
+
+# Create records for prediction
 
 sampled_records = train_set[required_columns].sample(n=1000, replace=True).to_dict(orient="records")
 
 dataframe_records = [[record] for record in sampled_records]
-
-# COMMAND ----------
 
 len(dataframe_records)
 
@@ -210,14 +196,3 @@ average_latency = sum(latencies) / len(latencies)
 print("\nTotal execution time:", total_execution_time, "seconds")
 print("Average latency per request:", average_latency, "seconds")
 
-
-# COMMAND ----------
-
-
-# COMMAND ----------
-
-
-# COMMAND ----------
-
-
-# COMMAND ----------

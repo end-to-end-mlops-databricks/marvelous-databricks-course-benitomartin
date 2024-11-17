@@ -182,7 +182,7 @@ print(workspace.online_tables.get(online_table_name))
 
 # COMMAND ----------
 
-# Pipeline_id to be added into the project_config.yml
+# Pipeline_id
 print(workspace.online_tables.get(online_table_name).spec.pipeline_id)
 
 # COMMAND ----------
@@ -235,9 +235,6 @@ workspace.serving_endpoints.create(
 # COMMAND ----------
 
 # Call The Endpoint
-# This will get a notebook token that is required
-# and the host url of the endpoint
-# Ideally you get a token from the cloud provider
 
 # token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
 
