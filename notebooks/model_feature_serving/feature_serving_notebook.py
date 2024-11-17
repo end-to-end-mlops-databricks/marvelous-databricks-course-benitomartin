@@ -42,7 +42,7 @@ from credit_default.utils import load_config
 
 # COMMAND ----------
 
-config = load_config("/Volumes/mlops_students/benitomartin/config/project_config.yml")
+config = load_config("../../project_config.yml")
 
 print(config)
 
@@ -94,6 +94,7 @@ pipeline = mlflow.sklearn.load_model(f"models:/{catalog_name}.{schema_name}.cred
 
 # COMMAND ----------
 
+# Define
 columns = [
     "Id",
     "Limit_bal",
@@ -332,5 +333,3 @@ average_latency = sum(latencies) / len(latencies)
 
 print("\nTotal execution time:", total_execution_time, "seconds")
 print("Average latency per request:", average_latency, "seconds")
-
-# COMMAND ----------

@@ -18,6 +18,7 @@ class Target(BaseModel):
 
 
 class Features(BaseModel):
+    clean: List[str]
     robust: List[str]
 
 
