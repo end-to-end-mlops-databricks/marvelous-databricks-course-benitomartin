@@ -26,7 +26,7 @@ mlflow.set_registry_uri("databricks-uc")
 
 # COMMAND ----------
 
-config = load_config("/Volumes/mlops_students/benitomartin/config/project_config.yml")
+config = load_config("../../project_config.yml")
 print(config)
 
 # COMMAND ----------
@@ -42,34 +42,30 @@ schema_name = config.schema_name
 parameters = config.parameters
 features_robust = config.features.robust
 
-# ab_test_params = config.ab_test
+ab_test_params = config.ab_test
 
 
 # COMMAND ----------
 
 # Set up specific parameters for model A and model B as part of the A/B test
-# parameters_a = {
-#     "learning_rate": ab_test_params["learning_rate_a"],
-#     "force_col_wise": ab_test_params["force_col_wise"],
-# }
 
 parameters_a = {
-    "learning_rate": 0.05,
-    "force_col_wise": "true",
+    "learning_rate": ab_test_params["learning_rate_a"],
+    "force_col_wise": ab_test_params["force_col_wise"],
 }
+
+print(parameters_a)
 
 # COMMAND ----------
 
 # Set up specific parameters for model A and model B as part of the A/B test
-# parameters_b = {
-#     "learning_rate": ab_test_params["learning_rate_b"],
-#     "force_col_wise": ab_test_params["force_col_wise"],
-# }
 
 parameters_b = {
-    "learning_rate": 0.1,
-    "force_col_wise": "true",
+    "learning_rate": ab_test_params["learning_rate_b"],
+    "force_col_wise": ab_test_params["force_col_wise"],
 }
+
+print(parameters_b)
 
 # COMMAND ----------
 
@@ -257,33 +253,8 @@ class CreditDefaultModelWrapper(mlflow.pyfunc.PythonModel):
 
 # COMMAND ----------
 
-# Add Id and columns
-columns = [
-    "Id",
-    "Limit_bal",
-    "Sex",
-    "Education",
-    "Marriage",
-    "Age",
-    "Pay_0",
-    "Pay_2",
-    "Pay_3",
-    "Pay_4",
-    "Pay_5",
-    "Pay_6",
-    "Bill_amt1",
-    "Bill_amt2",
-    "Bill_amt3",
-    "Bill_amt4",
-    "Bill_amt5",
-    "Bill_amt6",
-    "Pay_amt1",
-    "Pay_amt2",
-    "Pay_amt3",
-    "Pay_amt4",
-    "Pay_amt5",
-    "Pay_amt6",
-]
+# Add columns
+columns = config.features.clean
 
 X_train = train_set[columns]
 X_test = test_set[columns]
@@ -306,7 +277,7 @@ print("Example Prediction:", example_prediction)
 models = [model_A, model_B]
 wrapped_model = CreditDefaultModelWrapper(models)
 
-example_input = X_test.iloc[8:9]  # Select row hashed for mdoel B
+example_input = X_test.iloc[112:113]  # Select row hashed for mdoel B
 
 example_prediction = wrapped_model.predict(context=None, model_input=example_input)
 
@@ -346,7 +317,7 @@ print(model)
 
 # Run prediction
 predictions_a = model.predict(X_test.iloc[0:1])
-predictions_b = model.predict(X_test.iloc[8:9])
+predictions_b = model.predict(X_test.iloc[112:113])
 
 print(predictions_a)
 print(predictions_b)
@@ -374,7 +345,10 @@ workspace.serving_endpoints.create(
 
 # COMMAND ----------
 
-token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
+# token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
+
+token = dbutils.secrets.get(scope="secret-scope", key="databricks-token")  # noqa: F821
+
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
 # COMMAND ----------
