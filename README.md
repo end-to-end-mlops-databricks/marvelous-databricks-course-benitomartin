@@ -85,7 +85,7 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 
 - Updated config class with A/B test params
 - Updated test data cleaning
--
+- Updated config file
 
 
 ## Third PR - Branch: serving
