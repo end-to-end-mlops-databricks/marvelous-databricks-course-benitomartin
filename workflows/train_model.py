@@ -16,14 +16,14 @@ import argparse
 import mlflow
 import pandas as pd
 from databricks import feature_engineering
-from databricks.connect import DatabricksSession
+
+# from databricks.connect import DatabricksSession
 from databricks.feature_engineering import FeatureLookup
 from databricks.sdk import WorkspaceClient
 from imblearn.over_sampling import SMOTE
 from lightgbm import LGBMClassifier
 from mlflow.models import infer_signature
-
-# from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score  # classification_report, confusion_matrix,
@@ -66,8 +66,8 @@ config = load_config(config_path)
 
 
 workspace = WorkspaceClient()
-# spark = SparkSession.builder.getOrCreate()
-spark = DatabricksSession.builder.getOrCreate()
+spark = SparkSession.builder.getOrCreate()
+# spark = DatabricksSession.builder.getOrCreate()
 fe = feature_engineering.FeatureEngineeringClient()
 
 # Extract configuration details
@@ -124,7 +124,7 @@ balanced_spark_df.write.format("delta").mode("overwrite").saveAsTable(f"{catalog
 # Now use create_training_set to create balanced training set
 # Drop the original features that will be looked up from the feature store
 # Define the list of columns you want to drop, including "Update_timestamp_utc"
-columns_to_drop = columns + ["Update_timestamp_utc"]
+columns_to_drop = columns_wo_id + ["Update_timestamp_utc"]
 
 # Drop the specified columns from the train_set
 train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").drop(*columns_to_drop)
@@ -188,8 +188,14 @@ with mlflow.start_run(tags={"branch": "bundles", "git_sha": f"{git_sha}", "job_r
     mlflow.log_param("model_type", "LightGBM with preprocessing")
     mlflow.log_params(parameters)
     mlflow.log_metric("AUC", auc_test)
-    signature = infer_signature(model_input=X_train, model_output=y_pred)
+    # signature = infer_signature(model_input=X_train, model_output=y_pred)
 
+    # Signature with input example
+    input_example = X_train.iloc[:5]
+    signature = infer_signature(
+        model_input=input_example,
+        model_output=pipeline.predict(input_example),  # y_pred
+    )
     # Log model with feature engineering
     # We will register in next step, if model is better than the previous one
     fe.log_model(
@@ -198,6 +204,7 @@ with mlflow.start_run(tags={"branch": "bundles", "git_sha": f"{git_sha}", "job_r
         artifact_path="lightgbm-pipeline-model-fe",
         training_set=training_set,
         signature=signature,
+        input_example=input_example,
     )
 
 model_uri = f"runs:/{run_id}/lightgbm-pipeline-model-fe"

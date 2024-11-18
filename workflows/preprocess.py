@@ -21,10 +21,10 @@ Workflow:
 import argparse
 import time
 
-# from pyspark.sql import SparkSession
-from databricks.connect import DatabricksSession
+# from databricks.connect import DatabricksSession
 from databricks.sdk import WorkspaceClient
 from loguru import logger
+from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 from pyspark.sql.functions import max as spark_max
 
@@ -47,8 +47,8 @@ config_path = f"{root_path}/project_config.yml"
 config = load_config(config_path)
 pipeline_id = config.pipeline_id
 
-# spark = SparkSession.builder.getOrCreate()
-spark = DatabricksSession.builder.getOrCreate()
+spark = SparkSession.builder.getOrCreate()
+# spark = DatabricksSession.builder.getOrCreate()
 
 catalog_name = config.catalog_name
 schema_name = config.schema_name

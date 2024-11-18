@@ -290,12 +290,14 @@ wheels = [
 
 [[package]]
 name = "credit-default-databricks"
-version = "0.0.9"
+version = "0.0.10"
 source = { editable = "." }
 dependencies = [
     { name = "cffi" },
     { name = "cloudpickle" },
     { name = "databricks-feature-engineering" },
+    { name = "databricks-feature-lookup" },
+    { name = "databricks-sdk" },
     { name = "imbalanced-learn" },
     { name = "lightgbm" },
     { name = "loguru" },
@@ -313,7 +315,6 @@ dependencies = [
 [package.optional-dependencies]
 dev = [
     { name = "databricks-connect" },
-    { name = "databricks-sdk" },
     { name = "ipykernel" },
     { name = "pip" },
     { name = "pytest" },
@@ -326,14 +327,15 @@ requires-dist = [
     { name = "cffi", specifier = ">=1.17.1,<2" },
     { name = "cloudpickle", specifier = ">=3.0.0,<4" },
     { name = "databricks-connect", marker = "extra == 'dev'", specifier = ">=15.4.1,<16" },
-    { name = "databricks-feature-engineering", specifier = ">=0.6,<1" },
-    { name = "databricks-sdk", marker = "extra == 'dev'", specifier = ">=0.32.0,<0.33" },
+    { name = "databricks-feature-engineering", specifier = "==0.6" },
+    { name = "databricks-feature-lookup", specifier = "==1.2.0" },
+    { name = "databricks-sdk", specifier = "==0.32.0" },
     { name = "imbalanced-learn", specifier = ">=0.11.0,<1" },
     { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=6.29.5,<7" },
     { name = "lightgbm", specifier = ">=4.5.0,<5" },
     { name = "loguru", specifier = ">=0.6.0,<1" },
     { name = "matplotlib", specifier = ">=3.9.2,<4" },
-    { name = "mlflow", specifier = ">=2.16.0,<3" },
+    { name = "mlflow", specifier = "==2.17.0" },
     { name = "numpy", specifier = ">=1.26.4,<2" },
     { name = "pandas", specifier = ">=2.2.2,<3" },
     { name = "pip", marker = "extra == 'dev'", specifier = ">=24.2" },
@@ -408,7 +410,7 @@ wheels = [
 
 [[package]]
 name = "databricks-feature-engineering"
-version = "0.7.0"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-cosmos" },
@@ -422,20 +424,40 @@ dependencies = [
     { name = "sqlparse" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dd/62/7e4085fa5e550bec290cc1c5348ba1bd64cac58205ade06cdd4d8fb1dd43/databricks_feature_engineering-0.7.0-py3-none-any.whl", hash = "sha256:b48e19f3ce9b70de5eb1f8cb2c51d4711157906d59b4aea1258fb6346591b8e1", size = 255546 },
+    { url = "https://files.pythonhosted.org/packages/ae/73/ab301d1b538014c91fc4481b7e13c374cc60dd2cb0c0ea0ebf36a3f789c6/databricks_feature_engineering-0.6.0-py3-none-any.whl", hash = "sha256:4774868e1b1d132897e06c940c19a447b4c9999fa1afb43193d372ac4716b6d1", size = 253465 },
+]
+
+[[package]]
+name = "databricks-feature-lookup"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "azure-cosmos" },
+    { name = "boto3" },
+    { name = "mlflow" },
+    { name = "numpy" },
+    { name = "pyarrow" },
+    { name = "pymysql" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "sqlalchemy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/67/0c/ed94bce5fd98224a238bfd6bf7fab6a4dfc529c58bb8287f8d1c7612d3a3/databricks-feature-lookup-1.2.0.tar.gz", hash = "sha256:34213e9889367de80fecdd1d5ccf43791fc330ec4d2bfafd710dbb262157752c", size = 72520 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/20/16/d5464c1d6a11896d956dd9b9854c7072ca87333a8d788e3bd176b062bcf5/databricks_feature_lookup-1.2.0-py3-none-any.whl", hash = "sha256:d3f9336192ea6f293d587caf3a0805c29081754319fea43f22d6951c3a4af10d", size = 98113 },
 ]
 
 [[package]]
 name = "databricks-sdk"
-version = "0.32.3"
+version = "0.32.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "google-auth" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1f/2c/a6fe9382dc06a3bc5ce8ba5ddda2d8236cb81f85a1f0b7746eb329bd9277/databricks_sdk-0.32.3.tar.gz", hash = "sha256:bdb8acef3d79e83f05e7fca6cd6128b2b46a4bb4de240374c70050b5f029d4f2", size = 572703 }
+sdist = { url = "https://files.pythonhosted.org/packages/fa/95/c6949a497390bcfb633dedb1fa9fe81ba96afbbd90bd4668939f9e1004e5/databricks_sdk-0.32.0.tar.gz", hash = "sha256:ede9db99fe87dabf549e47b9cb0ddabb1170d20d9d88d22386e727984eff3167", size = 568533 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0d/45/a740906549189c434033788446f202358a99301cb6b7884e9cac47578126/databricks_sdk-0.32.3-py3-none-any.whl", hash = "sha256:66b57cfd7731f541df014d136d5c257aa45ea4caa95d0d3fbaaed5b43142f32a", size = 555103 },
+    { url = "https://files.pythonhosted.org/packages/b5/a7/0f7ce505b256c4b25bd9ce2ffc4304a77e78f933e942d80f11809e2b0a28/databricks_sdk-0.32.0-py3-none-any.whl", hash = "sha256:980b3b25647d752a0a350e249701085a2e2d870764091f877d5cd00b96015d49", size = 551988 },
 ]
 
 [[package]]
@@ -1511,6 +1533,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/8e/62/8336eff65bcbc8e4cb5d05b55faf041285951b6e80f33e2bff2024788f31/pygments-2.18.0.tar.gz", hash = "sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199", size = 4891905 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f7/3f/01c8b82017c199075f8f788d0d906b9ffbbc5a47dc9918a945e13d5a2bda/pygments-2.18.0-py3-none-any.whl", hash = "sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a", size = 1205513 },
+]
+
+[[package]]
+name = "pymysql"
+version = "1.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b3/8f/ce59b5e5ed4ce8512f879ff1fa5ab699d211ae2495f1adaa5fbba2a1eada/pymysql-1.1.1.tar.gz", hash = "sha256:e127611aaf2b417403c60bf4dc570124aeb4a57f5f37b8e95ae399a42f904cd0", size = 47678 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/94/e4181a1f6286f545507528c78016e00065ea913276888db2262507693ce5/PyMySQL-1.1.1-py3-none-any.whl", hash = "sha256:4de15da4c61dc132f4fb9ab763063e693d521a80fd0e87943b9a453dd4c19d6c", size = 44972 },
 ]
 
 [[package]]

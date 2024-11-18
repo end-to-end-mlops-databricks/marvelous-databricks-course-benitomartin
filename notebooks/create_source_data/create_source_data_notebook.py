@@ -1,16 +1,15 @@
 # Databricks notebook source
 import numpy as np
 import pandas as pd
+from pyspark.sql import SparkSession
 
-# from pyspark.sql import SparkSession
-from databricks.connect import DatabricksSession
-
+# from databricks.connect import DatabricksSession
 from credit_default.utils import load_config
 
 # COMMAND ----------
 
-# spark = SparkSession.builder.getOrCreate()
-spark = DatabricksSession.builder.getOrCreate()
+spark = SparkSession.builder.getOrCreate()
+# spark = DatabricksSession.builder.getOrCreate()
 
 # COMMAND ----------
 
@@ -145,7 +144,7 @@ synthetic_df.info()
 # empty_source_data_df = spark.createDataFrame(data=[], schema=train_set_schema)
 
 # # Create an empty source_data table
-# empty_source_data_df.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.source_data")
+# empty_source_data_df.write.mode("overwrite").saveAsTable(f"{catalog_name}.{schema_name}.source_data")
 
 # print(f"Empty table '{catalog_name}.{schema_name}.source_data' created successfully.")
 
