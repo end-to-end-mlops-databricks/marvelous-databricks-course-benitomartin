@@ -62,13 +62,17 @@ print(on_table.as_dict())
 
 # COMMAND ----------
 
+# workspace.online_tables.delete(online_table_name)
+
+# COMMAND ----------
+
 # Create the online table in Databricks
 on_table = OnlineTable(name=online_table_name, spec=spec)
 
 # ignore "already exists" error
 try:
     # Convert OnlineTable to dictionary before passing to create
-    online_table_dict = on_table.as_dict()
+    online_table_dict = on_table
     online_table_pipeline = workspace.online_tables.create(table=online_table_dict)
 
 except Exception as e:
