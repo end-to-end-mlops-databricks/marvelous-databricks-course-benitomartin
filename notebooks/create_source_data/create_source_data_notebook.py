@@ -20,7 +20,8 @@ catalog_name = config.catalog_name
 schema_name = config.schema_name
 
 # COMMAND ----------
-# 37354
+# 37354 is the original number of rows in the features_balanced after first SMOTE
+# 100 is the number of synthetic rows to generate each time running this notebook
 # Load train and test sets
 features_balanced = spark.table(f"{catalog_name}.{schema_name}.features_balanced").toPandas()
 existing_ids = set(int(id) for id in features_balanced["Id"])
@@ -31,6 +32,7 @@ len(existing_ids)
 # COMMAND ----------
 
 min(existing_ids), max(existing_ids)
+
 # COMMAND ----------
 
 
@@ -136,16 +138,16 @@ synthetic_df.info()
 
 # COMMAND ----------
 
-# Create source_data table with the same schema as train_set
-train_set_schema = spark.table(f"{catalog_name}.{schema_name}.train_set").schema
+# # Create source_data table with the same schema as train_set
+# train_set_schema = spark.table(f"{catalog_name}.{schema_name}.train_set").schema
 
-# Create an empty DataFrame with the same schema
-empty_source_data_df = spark.createDataFrame(data=[], schema=train_set_schema)
+# # Create an empty DataFrame with the same schema
+# empty_source_data_df = spark.createDataFrame(data=[], schema=train_set_schema)
 
-# Create an empty source_data table
-empty_source_data_df.write.mode("overwrite").saveAsTable(f"{catalog_name}.{schema_name}.source_data")
+# # Create an empty source_data table
+# empty_source_data_df.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.source_data")
 
-print(f"Empty table '{catalog_name}.{schema_name}.source_data' created successfully.")
+# print(f"Empty table '{catalog_name}.{schema_name}.source_data' created successfully.")
 
 # COMMAND ----------
 

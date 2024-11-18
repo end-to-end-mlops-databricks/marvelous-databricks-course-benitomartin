@@ -39,22 +39,22 @@ resources:
         pause_status: ${var.schedule_pause_status}
       tags:
         project_name: "credit-default"
-      job_clusters:
-        - job_cluster_key: "credit-default-cluster"
-          new_cluster:
-            spark_version: "15.4.x-scala2.12"
-            data_security_mode: "SINGLE_USER"
-            node_type_id: "i3.xlarge"
-            driver_node_type_id: "i3.xlarge"
-            autoscale:
-              min_workers: 1
-              max_workers: 1
+      # job_clusters:
+      #   - job_cluster_key: "credit-default-cluster"
+      #     new_cluster:
+      #       spark_version: "15.4.x-scala2.12"
+      #       data_security_mode: "SINGLE_USER"
+      #       node_type_id: "i3.xlarge"
+      #       driver_node_type_id: "i3.xlarge"
+      #       autoscale:
+      #         min_workers: 1
+      #         max_workers: 1
 
       tasks:
 
         - task_key: "preprocessing"
-          job_cluster_key: "credit-default-cluster"
-          # existing_cluster_id: 1014-134439-1sgb0b2m
+          # job_cluster_key: "credit-default-cluster"
+          existing_cluster_id: 1109-205408-dob4qyuc
           spark_python_task:
             python_file: "workflows/preprocess.py"
             parameters:
@@ -71,29 +71,29 @@ resources:
           depends_on:
             - task_key: "preprocessing"
 
-#         - task_key: "train_model"
-#           depends_on:
-#             - task_key: "if_refreshed"
-#               outcome: "true"
-#           job_cluster_key: "credit-default-cluster"
-#           # existing_cluster_id: 1014-134439-1sgb0b2m
-#           spark_python_task:
-#             python_file: "workflows/train_model.py"
-#             parameters:
-#               - "--root_path"
-#               - ${var.root_path}
-#               - "--git_sha"
-#               - ${var.git_sha}
-#               - "--job_run_id"
-#               - "{{job.id}}"
-#           libraries:
-#             - whl: ./dist/*.whl
+        - task_key: "train_model"
+          depends_on:
+            - task_key: "if_refreshed"
+              outcome: "true"
+          # job_cluster_key: "credit-default-cluster"
+          existing_cluster_id: 1109-205408-dob4qyuc
+          spark_python_task:
+            python_file: "workflows/train_model.py"
+            parameters:
+              - "--root_path"
+              - ${var.root_path}
+              - "--git_sha"
+              - ${var.git_sha}
+              - "--job_run_id"
+              - "{{job.id}}"
+          libraries:
+            - whl: ./dist/*.whl
 
 #         - task_key: "evaluate_model"
 #           depends_on:
 #             - task_key: "train_model"
 #           job_cluster_key: "credit-default-cluster"
-#           # existing_cluster_id: 1014-134439-1sgb0b2m
+#           # existing_cluster_id: 1109-205408-dob4qyuc
 #           spark_python_task:
 #             python_file: "workflows/evaluate_model.py"
 #             parameters:
@@ -120,7 +120,7 @@ resources:
 #             - task_key: "model_update"
 #               outcome: "true"
 #           job_cluster_key: "credit-default-cluster"
-#           # existing_cluster_id: 1014-134439-1sgb0b2m
+#           # existing_cluster_id: 1109-205408-dob4qyuc
 #           spark_python_task:
 #             python_file: "workflows/deploy_model.py"
 #             parameters:

@@ -1,5 +1,5 @@
 """
-This script handles data ingestion and feature table updates for a house price prediction system.
+This script handles data ingestion and feature table updates for a credit default prediction system.
 
 Key functionality:
 - Loads the source dataset and identifies new records for processing

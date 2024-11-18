@@ -45,7 +45,7 @@ export DATABRICKS_CONFIG_PROFILE=DEFAULT
 
 ### Catalog Creation
 
-- catalog name: maven
+- catalog name: credit
 - schema_name: default
 - volume name: data
 
@@ -103,6 +103,9 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Updated test data cleaning
 - Updated config file
 - Token creation
+- Added workflow preprocessing
+- Added workflow train_model
+
 
 
 ## Third PR - Branch: serving
