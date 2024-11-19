@@ -290,7 +290,7 @@ wheels = [
 
 [[package]]
 name = "credit-default-databricks"
-version = "0.0.10"
+version = "0.0.11"
 source = { editable = "." }
 dependencies = [
     { name = "cffi" },
@@ -335,7 +335,7 @@ requires-dist = [
     { name = "lightgbm", specifier = ">=4.5.0,<5" },
     { name = "loguru", specifier = ">=0.6.0,<1" },
     { name = "matplotlib", specifier = ">=3.9.2,<4" },
-    { name = "mlflow", specifier = "==2.17.0" },
+    { name = "mlflow", specifier = "==2.17.2" },
     { name = "numpy", specifier = ">=1.26.4,<2" },
     { name = "pandas", specifier = ">=2.2.2,<3" },
     { name = "pip", marker = "extra == 'dev'", specifier = ">=24.2" },
@@ -1119,7 +1119,7 @@ wheels = [
 
 [[package]]
 name = "mlflow"
-version = "2.17.0"
+version = "2.17.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alembic" },
@@ -1139,14 +1139,14 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "waitress", marker = "platform_system == 'Windows'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1f/37/d1cbc901baf6be85be5bc8ee5557c6c96ade6e01af73475413c3047ed2e9/mlflow-2.17.0.tar.gz", hash = "sha256:5bb2089b833da48e4a92a9b4cb1cb5fa509a571eb3c603be39f5238b4721e076", size = 26190360 }
+sdist = { url = "https://files.pythonhosted.org/packages/2d/a6/31af9c32f60455d2807e6b325fa533d7d74d426004e1ee09b7148a30f0f3/mlflow-2.17.2.tar.gz", hash = "sha256:3ecee5fa0eea9134154a99aec3006fe8fdbfc61d990a74ce99fa69cd3b54e933", size = 26179800 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bd/af/fdf92ad9f654f2210f225a56b4d45698f6f171d69c1195461b9fa18c5543/mlflow-2.17.0-py3-none-any.whl", hash = "sha256:64fbc0dfcb7322ed4cbccadc2f533bdd2944001b983ea8c10db45c7c59b46b7c", size = 26749518 },
+    { url = "https://files.pythonhosted.org/packages/ea/58/70867ecef084eed5dc89a016824238eb096947c840dc484828e93a510530/mlflow-2.17.2-py3-none-any.whl", hash = "sha256:5cd1b105d31db49d2c23d80d6e07ddde437793ffc1985b117fb013bf8ccb1ae8", size = 26744073 },
 ]
 
 [[package]]
 name = "mlflow-skinny"
-version = "2.17.0"
+version = "2.17.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
@@ -1163,9 +1163,9 @@ dependencies = [
     { name = "requests" },
     { name = "sqlparse" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c5/d9/16d1fcf8ceac28d1e96630b35563cbd391f0ea846863c1fe3444e1d24eaf/mlflow_skinny-2.17.0.tar.gz", hash = "sha256:bbb770368e68ffe783a76fa38854618c1411b44bda21eb8b770ca4cc28801299", size = 5325311 }
+sdist = { url = "https://files.pythonhosted.org/packages/b4/cc/df4f2c11cfae40c743bd2caa7e5f2b196bcf33abf918bdf71ee15e5c001c/mlflow_skinny-2.17.2.tar.gz", hash = "sha256:944144f2c94afff293c3f000dc605c7f08f5f8287bc6108d52a6f6e13dc4b64b", size = 5322758 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/35/2821869a7c78e50148e460406834c4d8aa863d361b7084a8e923f18be474/mlflow_skinny-2.17.0-py3-none-any.whl", hash = "sha256:9eff7160f7459e09c01cc5bc2a68fdba7b64adbce069ef6d1013569830569048", size = 5653049 },
+    { url = "https://files.pythonhosted.org/packages/51/66/47784192b65ba3b5a48b2a1b2d0f42d211db0bfb799183b64fdcdd5d24e1/mlflow_skinny-2.17.2-py3-none-any.whl", hash = "sha256:d45d6ba7a05e4755110eca71afcad12d6ede51114b2be0fbb60a3f28d9159ab5", size = 5660329 },
 ]
 
 [package.optional-dependencies]

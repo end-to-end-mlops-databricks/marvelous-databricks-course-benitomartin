@@ -33,7 +33,7 @@ class Config(BaseModel):
     features: Features
 
 
-def setup_logging(log_file: Optional[str] = None, log_level: str = "DEBUG") -> None:
+def setup_logging(log_file: Optional[str] = "", log_level: str = "DEBUG") -> None:
     """
     Sets up logging configuration with optional file logging.
 
@@ -46,7 +46,7 @@ def setup_logging(log_file: Optional[str] = None, log_level: str = "DEBUG") -> N
     logger.remove()
 
     # Add file logger with rotation if log_file is provided
-    if log_file:
+    if log_file != "":
         logger.add(log_file, level=log_level, rotation="500 MB")
 
     # Add stdout logger

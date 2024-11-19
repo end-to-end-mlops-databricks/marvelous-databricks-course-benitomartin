@@ -32,7 +32,7 @@ from pyspark.sql.functions import max as spark_max
 from credit_default.utils import load_config, setup_logging
 
 # Set up logging
-setup_logging()
+setup_logging(log_file="")
 
 try:
     # Parse arguments
