@@ -102,15 +102,25 @@ try:
 
     # Cast specific columns to match Delta table schema
     columns_to_cast = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6"]
+    feature_table_name = f"{catalog_name}.{schema_name}.features_balanced"
+
     for column in columns_to_cast:
         balanced_spark_df = balanced_spark_df.withColumn(column, F.col(column).cast("double"))
 
-    feature_table_name = f"{catalog_name}.{schema_name}.features_balanced"
     balanced_spark_df.write.format("delta").mode("overwrite").saveAsTable(feature_table_name)
     logger.info(f"Feature table '{feature_table_name}' updated with balanced data.")
 
+    # Now use create_training_set to create balanced training set
+    # Drop the original features that will be looked up from the feature store
+    # Define the list of columns you want to drop, including "Update_timestamp_utc"
+    columns_to_drop = columns_wo_id + ["Update_timestamp_utc"]
+    train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").drop(*columns_to_drop)
+    logger.info(f"Train set columns for feature table: {train_set.columns}")
+
     # Create training set from feature table
-    train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").drop(*columns + ["Update_timestamp_utc"])
+    mlflow.set_tracking_uri("databricks")
+    mlflow.set_registry_uri("databricks-uc")
+
     training_set = fe.create_training_set(
         df=train_set,
         label=target,
@@ -140,8 +150,6 @@ try:
     pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMClassifier(**parameters))])
 
     # MLflow setup
-    mlflow.set_tracking_uri("databricks")
-    mlflow.set_registry_uri("databricks-uc")
     mlflow.set_experiment(experiment_name="/Shared/credit-feature")
     logger.info("MLflow setup completed.")
 
@@ -157,7 +165,10 @@ try:
         mlflow.log_params(parameters)
         mlflow.log_metric("AUC", auc_test)
         input_example = X_train.iloc[:5]
-        signature = infer_signature(model_input=input_example, model_output=pipeline.predict(input_example))
+        signature = infer_signature(model_input=input_example, model_output=pipeline.predict(input_example))  # y_pred
+
+        # Log model with feature engineering
+        # We will register in next step, if model is better than the previous one (evaluate_model.py)
         fe.log_model(
             model=pipeline,
             flavor=mlflow.sklearn,

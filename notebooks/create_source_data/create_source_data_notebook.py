@@ -108,7 +108,6 @@ def create_synthetic_data(df, num_rows=100):
     return synthetic_data
 
 
-
 # Create synthetic data
 synthetic_df = create_synthetic_data(combined_set)
 
