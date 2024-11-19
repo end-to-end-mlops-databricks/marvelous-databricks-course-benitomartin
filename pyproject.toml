@@ -45,7 +45,7 @@ packages = ["src"]
 
 # Wheel build configuration
 [tool.hatch.build.targets.wheel]
-packages = ["src/credit_default", "src/ml_flow"]
+packages = ["src/credit_default"]
 
 [tool.ruff]
 line-length = 120

@@ -103,9 +103,9 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Updated test data cleaning
 - Updated config file
 - Token creation
-- Added workflow preprocessing
-- Added workflow train_model
-- Fixed dependencies in pyproject.toml (v 0.0.10)
+- Added workflows preprocessing, train_model, evaluate_model, deploy_model
+- Added create_source_data notebook
+- Fixed dependencies in pyproject.toml (v 0.0.11)
 
 
 

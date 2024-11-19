@@ -103,3 +103,4 @@ notebooks/mlruns/
 notebooks/model_version.json
 notebooks/test_scripts/
 notebooks/exploration/
+see_tables.py
