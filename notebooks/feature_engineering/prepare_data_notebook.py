@@ -1,14 +1,16 @@
 # Databricks notebook source
 import os
 
+from databricks.connect import DatabricksSession
 from dotenv import load_dotenv
 from loguru import logger
-from pyspark.sql import SparkSession
 
+# from pyspark.sql import SparkSession
 from credit_default.data_preprocessing_spark import DataPreprocessor
 from credit_default.utils import load_config, setup_logging
 
-spark = SparkSession.builder.getOrCreate()
+# spark = SparkSession.builder.getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
 
 # Load environment variables
 load_dotenv()

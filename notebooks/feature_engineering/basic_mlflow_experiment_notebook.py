@@ -3,10 +3,12 @@ import json
 import os
 
 import mlflow
+from databricks.connect import DatabricksSession
 from dotenv import load_dotenv
 from lightgbm import LGBMClassifier
 from mlflow.models import infer_signature
-from pyspark.sql import SparkSession
+
+# from pyspark.sql import SparkSession
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score  # classification_report, confusion_matrix,
 from sklearn.pipeline import Pipeline
@@ -14,21 +16,21 @@ from sklearn.preprocessing import RobustScaler
 
 from credit_default.utils import load_config
 
-spark = SparkSession.builder.getOrCreate()
+# spark = SparkSession.builder.getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
 
 # Load environment variables
 load_dotenv()
 
 CONFIG_DATABRICKS = os.environ["CONFIG_DATABRICKS"]
-PROFILE = os.environ["PROFILE"]
 print(CONFIG_DATABRICKS)
-print(PROFILE)
+
 
 # COMMAND ----------
 
 # tracking and registry URIs
-mlflow.set_tracking_uri(f"databricks://{PROFILE}")
-mlflow.set_registry_uri(f"databricks-uc://{PROFILE}")
+mlflow.set_tracking_uri("databricks")
+mlflow.set_registry_uri("databricks-uc")
 
 # COMMAND ----------
 
@@ -109,9 +111,10 @@ with mlflow.start_run(tags={"branch": "serving"}) as run:
 model_version = mlflow.register_model(
     model_uri=f"runs:/{run_id}/lightgbm-pipeline-model",
     name=f"{catalog_name}.{schema_name}.credit_default_model_basic",
-    tags={"branch": "mlflow"},
+    tags={"branch": "serving"},
 )
 
 # Optionally, save the model version information
 with open("model_version.json", "w") as json_file:
     json.dump(model_version.__dict__, json_file, indent=4)
+# COMMAND ----------

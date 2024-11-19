@@ -15,6 +15,11 @@ import time
 
 import requests
 from databricks.sdk import WorkspaceClient
+from databricks.sdk.service.catalog import (
+    OnlineTable,
+    OnlineTableSpec,
+    OnlineTableSpecTriggeredSchedulingPolicy,
+)
 from databricks.sdk.service.serving import EndpointCoreConfigInput, ServedEntityInput
 from pyspark.sql import SparkSession
 
@@ -27,7 +32,7 @@ workspace = WorkspaceClient()
 
 # COMMAND ----------
 
-config = load_config("/Volumes/mlops_students/benitomartin/config/project_config.yml")
+config = load_config("../../project_config.yml")
 
 print(config)
 
@@ -38,18 +43,51 @@ schema_name = config.schema_name
 
 # COMMAND ----------
 
-# # Create online table using the balanced features table as source
+# Create online table using the balanced features table as source
+
+spec = OnlineTableSpec(
+    primary_key_columns=["Id"],
+    source_table_full_name=f"{catalog_name}.{schema_name}.features_balanced",
+    run_triggered=OnlineTableSpecTriggeredSchedulingPolicy.from_dict({"triggered": "true"}),
+    perform_full_copy=False,
+)
+
+# COMMAND ----------
+
+# Create the online table in Databricks
+online_table_name = f"{catalog_name}.{schema_name}.features_balanced_online"
+
+on_table = OnlineTable(name=online_table_name, spec=spec)
+print(on_table.as_dict())
+
+# COMMAND ----------
 
 # online_table_name = f"{catalog_name}.{schema_name}.features_balanced_online"
+# workspace.online_tables.delete(online_table_name)
 
-# spec = OnlineTableSpec(
-#     primary_key_columns=["Id"],
-#     source_table_full_name=f"{catalog_name}.{schema_name}.features_balanced",
-#     run_triggered=OnlineTableSpecTriggeredSchedulingPolicy.from_dict({"triggered": "true"}),
-#     perform_full_copy=False,
-# )
+# COMMAND ----------
 
-# online_table_pipeline = workspace.online_tables.create(name=online_table_name, spec=spec)
+# Create the online table in Databricks
+on_table = OnlineTable(name=online_table_name, spec=spec)
+
+# ignore "already exists" error
+try:
+    # Convert OnlineTable to dictionary before passing to create
+    online_table_dict = on_table
+    online_table_pipeline = workspace.online_tables.create(table=online_table_dict)
+
+except Exception as e:
+    if "already exists" in str(e):
+        pass
+    else:
+        raise e
+
+print(workspace.online_tables.get(online_table_name))
+
+# COMMAND ----------
+
+# Pipeline_id to be added into the project_config.yml
+print(workspace.online_tables.get(online_table_name).spec.pipeline_id)
 
 # COMMAND ----------
 
@@ -70,7 +108,7 @@ workspace.serving_endpoints.create(
                 entity_name=f"{catalog_name}.{schema_name}.credit_model_feature",
                 scale_to_zero_enabled=True,
                 workload_size="Small",
-                entity_version=2,
+                entity_version=1,
             )
         ]
     ),
@@ -80,7 +118,10 @@ workspace.serving_endpoints.create(
 
 ## Call the endpoint
 
-token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
+# token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()  # noqa: F821
+
+token = dbutils.secrets.get(scope="secret-scope", key="databricks-token")  # noqa: F821
+
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
 
@@ -90,7 +131,8 @@ host = spark.conf.get("spark.databricks.workspaceUrl")
 
 required_columns = ["Id"]
 
-## /feature_mlflow_experiment_notebook.py
+## This is the original code from /feature_mlflow_experiment_notebook.py
+## Do not uncoment/use
 # training_set = fe.create_training_set(
 #     df=train_set,
 #     label="Default",

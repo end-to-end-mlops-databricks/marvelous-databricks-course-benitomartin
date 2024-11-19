@@ -2,6 +2,7 @@ import os
 from typing import Tuple
 
 import pandas as pd
+from databricks.connect import DatabricksSession
 from dotenv import load_dotenv
 from loguru import logger
 from pyspark.sql import SparkSession
@@ -16,7 +17,8 @@ from credit_default.utils import Config
 # Load environment variables
 load_dotenv()
 
-spark = SparkSession.builder.getOrCreate()
+# spark = SparkSession.builder.getOrCreate()
+spark = DatabricksSession.builder.getOrCreate()
 
 FILEPATH_DATABRICKS = os.environ["FILEPATH_DATABRICKS"]
 PREPROCESSING_LOGS = os.environ["PREPROCESSING_LOGS"]

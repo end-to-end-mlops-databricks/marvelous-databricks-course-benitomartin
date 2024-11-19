@@ -3,7 +3,7 @@ name: CI
 on:
   # push:
   #   branches:
-  #     - serving  # Trigger on push to the 'serving' branch
+  #     - bundles  # Trigger on push to the 'bundles' branch
 
   pull_request:
     branches:

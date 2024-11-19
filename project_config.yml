@@ -1,8 +1,14 @@
 # catalog_name: maven
 # schema_name: default
 
-catalog_name: mlops_students
-schema_name: benitomartin
+# catalog_name: mlops_students
+# schema_name: benitomartin
+# pipeline_id: c62ac21f-10bb-431e-b286-4b283fe24b61 # Pipeline Id under "features_balanced_online" table in catalog
+
+catalog_name: credit
+schema_name: default
+pipeline_id: b90515b0-e6ce-40a2-a795-977f394c4137 # Pipeline Id under "features_balanced_online" table in catalog. Created in model_serving_feat_lookup_notebook.py
+
 
 parameters:
   learning_rate: 0.05
@@ -70,8 +76,35 @@ target:
     dtype: int64
     new_name: Default
 
-# Scaling Features
 features:
+  # Clean Column Names
+  clean:
+    - Id
+    - Limit_bal
+    - Sex
+    - Education
+    - Marriage
+    - Age
+    - Pay_0
+    - Pay_2
+    - Pay_3
+    - Pay_4
+    - Pay_5
+    - Pay_6
+    - Bill_amt1
+    - Bill_amt2
+    - Bill_amt3
+    - Bill_amt4
+    - Bill_amt5
+    - Bill_amt6
+    - Pay_amt1
+    - Pay_amt2
+    - Pay_amt3
+    - Pay_amt4
+    - Pay_amt5
+    - Pay_amt6
+
+  # Scaling Features
   robust:
     - Limit_bal
     - Bill_amt1

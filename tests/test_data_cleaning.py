@@ -36,8 +36,8 @@ def test_preprocess_data(config):
     data_cleaning = DataCleaning(FILEPATH, config)
     cleaned_df = data_cleaning.preprocess_data()
 
-    # Check if the ID column is dropped
-    assert "ID" not in cleaned_df.columns
+    # Check if the ID column is present and correctly cased
+    assert "Id" in cleaned_df.columns
 
     # Check if the target column is renamed correctly
     assert "Default" in cleaned_df.columns

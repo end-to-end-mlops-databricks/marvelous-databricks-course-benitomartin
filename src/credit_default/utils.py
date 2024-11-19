@@ -1,5 +1,5 @@
 import sys
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Optional
 
 import yaml
 from loguru import logger
@@ -18,36 +18,43 @@ class Target(BaseModel):
 
 
 class Features(BaseModel):
+    clean: List[str]
     robust: List[str]
 
 
 class Config(BaseModel):
     catalog_name: str
     schema_name: str
+    pipeline_id: str
     parameters: Dict[str, Any] = Field(description="Parameters for model training")
+    ab_test: Dict[str, Any] = Field(description="Parameters for A/B testing")
     num_features: List[NumFeature]
     target: List[Target]
     features: Features
 
 
-def setup_logging(log_file: str, log_level: str = "DEBUG") -> None:
+def setup_logging(log_file: Optional[str] = "", log_level: str = "DEBUG") -> None:
     """
-    Sets up logging configuration with rotation.
+    Sets up logging configuration with optional file logging.
 
     Args:
-        log_file (str): Path to the log file
+        log_file (str, optional): Path to the log file. Defaults to None.
         log_level (str, optional): Logging level to use. Defaults to "DEBUG".
     """
-    # Remove default logger
+
+    # Remove the default logger
     logger.remove()
 
-    # Add file logger with rotation
-    logger.add(log_file, level=log_level, rotation="500 MB")
+    # Add file logger with rotation if log_file is provided
+    if log_file != "":
+        logger.add(log_file, level=log_level, rotation="500 MB")
 
-    # Add stdout logger if requested
+    # Add stdout logger
     logger.add(
         sys.stdout,
         level=log_level,
+        colorize=True,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level}</level> | <cyan>{module}</cyan>:<cyan>{function}</cyan> - <level>{message}</level>",
     )
 
 
