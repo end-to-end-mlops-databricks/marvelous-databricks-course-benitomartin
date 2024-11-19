@@ -48,6 +48,8 @@ try:
     root_path = args.root_path
     git_sha = args.git_sha
     job_run_id = args.job_run_id
+    logger.debug(f"Git SHA: {git_sha}")
+    logger.debug(f"Job Run ID: {job_run_id}")
     logger.info("Parsed arguments successfully.")
 
     # Load configuration

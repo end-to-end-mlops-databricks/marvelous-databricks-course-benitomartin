@@ -61,7 +61,8 @@ try:
     pipeline_id = config.pipeline_id
     catalog_name = config.catalog_name
     schema_name = config.schema_name
-    logger.debug(f"Catalog: {catalog_name}, Schema: {schema_name}, Pipeline ID: {pipeline_id}")
+    logger.debug(f"Catalog: {catalog_name}, Schema: {schema_name}")
+    logger.debug(f"Pipeline ID: {pipeline_id}")
 
     # Load source data table
     source_data_table_name = f"{catalog_name}.{schema_name}.source_data"

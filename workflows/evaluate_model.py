@@ -45,6 +45,9 @@ try:
     git_sha = args.git_sha
     job_run_id = args.job_run_id
     new_model_uri = args.new_model_uri
+    logger.debug(f"Git SHA: {git_sha}")
+    logger.debug(f"Job Run ID: {job_run_id}")
+    logger.debug(f"New Model Uri: {new_model_uri}")
     logger.info("Parsed arguments successfully.")
 
     # Load configuration
