@@ -62,6 +62,7 @@ print(on_table.as_dict())
 
 # COMMAND ----------
 
+# online_table_name = f"{catalog_name}.{schema_name}.features_balanced_online"
 # workspace.online_tables.delete(online_table_name)
 
 # COMMAND ----------

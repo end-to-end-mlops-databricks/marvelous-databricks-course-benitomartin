@@ -9,7 +9,7 @@ IN VSCODE WON'T WORK
 import mlflow
 import pandas as pd
 from databricks import feature_engineering
-from databricks.feature_store import FeatureLookup
+from databricks.feature_engineering import FeatureLookup
 from imblearn.over_sampling import SMOTE
 from lightgbm import LGBMClassifier
 from mlflow.models import infer_signature

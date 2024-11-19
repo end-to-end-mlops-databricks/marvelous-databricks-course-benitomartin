@@ -19,6 +19,7 @@ catalog_name = config.catalog_name
 schema_name = config.schema_name
 
 # COMMAND ----------
+
 # 37354 is the original number of rows in the features_balanced after first SMOTE
 # 100 is the number of synthetic rows to generate each time running this notebook
 # Load train and test sets
@@ -26,6 +27,7 @@ features_balanced = spark.table(f"{catalog_name}.{schema_name}.features_balanced
 existing_ids = set(int(id) for id in features_balanced["Id"])
 
 # COMMAND ----------
+
 len(existing_ids)
 
 # COMMAND ----------
@@ -106,17 +108,13 @@ def create_synthetic_data(df, num_rows=100):
     return synthetic_data
 
 
-# COMMAND ----------
 
 # Create synthetic data
 synthetic_df = create_synthetic_data(combined_set)
 
-# COMMAND ----------
-
 # Move "Id" to the first position
 columns = ["Id"] + [col for col in synthetic_df.columns if col != "Id"]
 synthetic_df = synthetic_df[columns]
-
 
 # COMMAND ----------
 
