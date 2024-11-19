@@ -12,6 +12,7 @@ Key functionality:
 """
 
 import argparse
+import sys
 
 import mlflow
 import pandas as pd
@@ -22,6 +23,7 @@ from databricks.feature_engineering import FeatureLookup
 from databricks.sdk import WorkspaceClient
 from imblearn.over_sampling import SMOTE
 from lightgbm import LGBMClassifier
+from loguru import logger
 from mlflow.models import infer_signature
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
@@ -30,182 +32,142 @@ from sklearn.metrics import roc_auc_score  # classification_report, confusion_ma
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import RobustScaler
 
-from credit_default.utils import load_config
+from credit_default.utils import load_config, setup_logging
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--root_path",
-    action="store",
-    default=None,
-    type=str,
-    required=True,
-)
-parser.add_argument(
-    "--git_sha",
-    action="store",
-    default=None,
-    type=str,
-    required=True,
-)
-parser.add_argument(
-    "--job_run_id",
-    action="store",
-    default=None,
-    type=str,
-    required=True,
-)
+# Set up logging
+setup_logging()
 
-args = parser.parse_args()
-root_path = args.root_path
-git_sha = args.git_sha
-job_run_id = args.job_run_id
+try:
+    # Parse arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root_path", action="store", default=None, type=str, required=True)
+    parser.add_argument("--git_sha", action="store", default=None, type=str, required=True)
+    parser.add_argument("--job_run_id", action="store", default=None, type=str, required=True)
+    args = parser.parse_args()
 
+    root_path = args.root_path
+    git_sha = args.git_sha
+    job_run_id = args.job_run_id
+    logger.info("Parsed arguments successfully.")
 
-config_path = f"{root_path}/project_config.yml"
-config = load_config(config_path)
+    # Load configuration
+    logger.info("Loading configuration...")
+    config_path = f"{root_path}/project_config.yml"
+    config = load_config(config_path)
+    logger.info("Configuration loaded successfully.")
 
+    # Initialize Databricks workspace client
+    workspace = WorkspaceClient()
+    logger.info("Databricks workspace client initialized.")
 
-workspace = WorkspaceClient()
-spark = SparkSession.builder.getOrCreate()
-# spark = DatabricksSession.builder.getOrCreate()
-fe = feature_engineering.FeatureEngineeringClient()
+    # Initialize Spark session
+    spark = SparkSession.builder.getOrCreate()
+    # spark = DatabricksSession.builder.getOrCreate()
+    fe = feature_engineering.FeatureEngineeringClient()
+    logger.info("Spark session initialized.")
 
-# Extract configuration details
-catalog_name = config.catalog_name
-schema_name = config.schema_name
-target = config.target[0].new_name
-parameters = config.parameters
-features_robust = config.features.robust
-columns = config.features.clean
-columns_wo_id = columns.copy()
-columns_wo_id.remove("Id")
+    # Extract configuration details
+    catalog_name = config.catalog_name
+    schema_name = config.schema_name
+    target = config.target[0].new_name
+    parameters = config.parameters
+    features_robust = config.features.robust
+    columns = config.features.clean
+    columns_wo_id = columns.copy()
+    columns_wo_id.remove("Id")
 
+    # Convert train and test sets to Pandas DataFrames
+    train_pdf = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
+    test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
 
-# Define table names and function name
-feature_table_name = f"{catalog_name}.{schema_name}.features_balanced"
+    # Separate features and target for SMOTE
+    X = train_pdf[columns_wo_id]
+    y = train_pdf[target]
 
+    # Apply SMOTE for balancing
+    smote = SMOTE(random_state=parameters["random_state"])
+    X_balanced, y_balanced = smote.fit_resample(X, y)
+    logger.info(f"SMOTE applied. Original: {len(X)}, Balanced: {len(X_balanced)}.")
 
-# Convert Train/Test Spark DataFrame to Pandas
-train_pdf = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
-test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
+    # Create balanced DataFrame
+    balanced_df = pd.DataFrame(X_balanced, columns=columns_wo_id)
+    num_original_samples = len(train_pdf)
+    len_range = len(train_pdf) + len(test_set) + 1
+    balanced_df["Id"] = train_pdf["Id"].values.tolist() + [
+        str(i) for i in range(len_range, len_range + len(balanced_df) - num_original_samples)
+    ]
+    balanced_spark_df = spark.createDataFrame(balanced_df)
 
-# Separate features and target
-X = train_pdf[columns_wo_id]
-y = train_pdf[target]
+    # Cast specific columns to match Delta table schema
+    columns_to_cast = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6"]
+    for column in columns_to_cast:
+        balanced_spark_df = balanced_spark_df.withColumn(column, F.col(column).cast("double"))
 
-# Apply SMOTE
-smote = SMOTE(random_state=parameters["random_state"])
-X_balanced, y_balanced = smote.fit_resample(X, y)
+    feature_table_name = f"{catalog_name}.{schema_name}.features_balanced"
+    balanced_spark_df.write.format("delta").mode("overwrite").saveAsTable(feature_table_name)
+    logger.info(f"Feature table '{feature_table_name}' updated with balanced data.")
 
-# Create balanced DataFrame using only the train_set
-balanced_df = pd.DataFrame(X_balanced, columns=columns_wo_id)
+    # Create training set from feature table
+    train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").drop(*columns + ["Update_timestamp_utc"])
+    training_set = fe.create_training_set(
+        df=train_set,
+        label=target,
+        feature_lookups=[
+            FeatureLookup(
+                table_name=feature_table_name,
+                feature_names=columns_wo_id,
+                lookup_key="Id",
+            )
+        ],
+        exclude_columns=["Update_timestamp_utc"],
+    )
+    training_df = training_set.load_df().toPandas()
+    logger.info("Training set created and loaded.")
 
-# Identify the number of original samples
-num_original_samples = len(train_pdf)
-len_range = len(train_pdf) + len(test_set) + 1
+    # Prepare train and test datasets
+    X_train = training_df[columns_wo_id]
+    y_train = training_df[target]
+    X_test = test_set[columns_wo_id]
+    y_test = test_set[target]
 
-# Retain original Ids for the real samples and create new Ids for synthetic samples
-# Start with sum length train+test+1 to avoid conflicts with existing Ids
-balanced_df["Id"] = train_pdf["Id"].values.tolist() + [
-    str(i) for i in range(len_range, len_range + len(balanced_df) - num_original_samples)
-]
+    # Define preprocessing and pipeline
+    preprocessor = ColumnTransformer(
+        transformers=[("robust_scaler", RobustScaler(), features_robust)],
+        remainder="passthrough",
+    )
+    pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMClassifier(**parameters))])
 
-# Convert back to Spark DataFrame and insert into feature table
-balanced_spark_df = spark.createDataFrame(balanced_df)
+    # MLflow setup
+    mlflow.set_tracking_uri("databricks")
+    mlflow.set_registry_uri("databricks-uc")
+    mlflow.set_experiment(experiment_name="/Shared/credit-feature")
+    logger.info("MLflow setup completed.")
 
-# Cast columns in balanced_spark_df to match the schema of the Delta table
-columns_to_cast = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6"]
+    # Train model and log in MLflow
+    with mlflow.start_run(tags={"branch": "bundles", "git_sha": git_sha, "job_run_id": job_run_id}) as run:
+        pipeline.fit(X_train, y_train)
+        y_pred = pipeline.predict(X_test)
+        auc_test = roc_auc_score(y_test, y_pred)
+        logger.info(f"Test AUC: {auc_test}")
 
-for column in columns_to_cast:
-    balanced_spark_df = balanced_spark_df.withColumn(column, F.col(column).cast("double"))
-
-balanced_spark_df.write.format("delta").mode("overwrite").saveAsTable(f"{catalog_name}.{schema_name}.features_balanced")
-
-# Now use create_training_set to create balanced training set
-# Drop the original features that will be looked up from the feature store
-# Define the list of columns you want to drop, including "Update_timestamp_utc"
-columns_to_drop = columns_wo_id + ["Update_timestamp_utc"]
-
-# Drop the specified columns from the train_set
-train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").drop(*columns_to_drop)
-
-# Feature Lookup
-
-mlflow.set_tracking_uri("databricks")
-mlflow.set_registry_uri("databricks-uc")
-
-training_set = fe.create_training_set(
-    df=train_set,
-    label=target,
-    feature_lookups=[
-        FeatureLookup(
-            table_name=f"{catalog_name}.{schema_name}.features_balanced",
-            feature_names=columns_wo_id,
-            lookup_key="Id",
+        # Log model details
+        mlflow.log_param("model_type", "LightGBM with preprocessing")
+        mlflow.log_params(parameters)
+        mlflow.log_metric("AUC", auc_test)
+        input_example = X_train.iloc[:5]
+        signature = infer_signature(model_input=input_example, model_output=pipeline.predict(input_example))
+        fe.log_model(
+            model=pipeline,
+            flavor=mlflow.sklearn,
+            artifact_path="lightgbm-pipeline-model-fe",
+            training_set=training_set,
+            signature=signature,
+            input_example=input_example,
         )
-    ],
-    exclude_columns=["Update_timestamp_utc"],
-)
+        model_uri = f"runs:/{run.info.run_id}/lightgbm-pipeline-model-fe"
+        dbutils.jobs.taskValues.set(key="new_model_uri", value=model_uri)  # noqa: F821
+        logger.info(f"Model registered: {model_uri}")
 
-# Load feature-engineered DataFrame
-training_df = training_set.load_df().toPandas()
-
-
-# Split features and target (exclude 'Id' from features)
-X_train = training_df[columns_wo_id]
-y_train = training_df[target]
-X_test = test_set[columns_wo_id]
-y_test = test_set[target]
-
-
-# Setup preprocessing and model pipeline
-preprocessor = ColumnTransformer(
-    transformers=[("robust_scaler", RobustScaler(), features_robust)],
-    remainder="passthrough",
-)
-
-# Create the pipeline with preprocessing and the LightGBM classifier
-pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", LGBMClassifier(**parameters))])
-
-
-# Set up the experiment
-mlflow.set_experiment(experiment_name="/Shared/credit-feature")
-
-# Start an MLflow run to track the training process
-with mlflow.start_run(tags={"branch": "bundles", "git_sha": f"{git_sha}", "job_run_id": job_run_id}) as run:
-    run_id = run.info.run_id
-
-    # Train the model
-    pipeline.fit(X_train, y_train)
-    y_pred = pipeline.predict(X_test)
-
-    # Evaluate the model performance
-    auc_test = roc_auc_score(y_test, y_pred)
-
-    print("Test AUC:", auc_test)
-
-    # Log parameters, metrics, and signature
-    mlflow.log_param("model_type", "LightGBM with preprocessing")
-    mlflow.log_params(parameters)
-    mlflow.log_metric("AUC", auc_test)
-    # signature = infer_signature(model_input=X_train, model_output=y_pred)
-
-    # Signature with input example
-    input_example = X_train.iloc[:5]
-    signature = infer_signature(
-        model_input=input_example,
-        model_output=pipeline.predict(input_example),  # y_pred
-    )
-    # Log model with feature engineering
-    # We will register in next step, if model is better than the previous one
-    fe.log_model(
-        model=pipeline,
-        flavor=mlflow.sklearn,
-        artifact_path="lightgbm-pipeline-model-fe",
-        training_set=training_set,
-        signature=signature,
-        input_example=input_example,
-    )
-
-model_uri = f"runs:/{run_id}/lightgbm-pipeline-model-fe"
-dbutils.jobs.taskValues.set(key="new_model_uri", value=model_uri)  # noqa: F821
+except Exception as e:
+    logger.error(f"An error occurred: {e}")
+    sys.exit(1)  # Exit with failure code

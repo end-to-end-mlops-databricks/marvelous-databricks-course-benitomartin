@@ -105,7 +105,7 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Token creation
 - Added workflow preprocessing
 - Added workflow train_model
-- Fixed dependencies in pyproject.toml
+- Fixed dependencies in pyproject.toml (v 0.0.10)
 
 
 

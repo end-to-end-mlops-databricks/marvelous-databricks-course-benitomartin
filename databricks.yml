@@ -17,11 +17,11 @@ artifacts:
 # These are for any custom variables for use throughout the bundle.
 variables:
   root_path:
-    description: root_path for the target
+    description: root_path for the bundle files
     default: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}/files
   git_sha:
     description: git_sha
-    default: abcd
+    default: ${GIT_SHA:-$(git rev-parse HEAD)}
   schedule_pause_status:
     description: schedule pause status
     default: UNPAUSED
@@ -89,45 +89,45 @@ resources:
           libraries:
             - whl: ./dist/*.whl
 
-#         - task_key: "evaluate_model"
-#           depends_on:
-#             - task_key: "train_model"
-#           job_cluster_key: "credit-default-cluster"
-#           # existing_cluster_id: 1109-205408-dob4qyuc
-#           spark_python_task:
-#             python_file: "workflows/evaluate_model.py"
-#             parameters:
-#               - "--root_path"
-#               - ${var.root_path}
-#               - "--new_model_uri"
-#               - "{{tasks.train_model.values.new_model_uri}}"
-#               - "--job_run_id"
-#               - "{{job.id}}"
-#               - "--git_sha"
-#               - ${var.git_sha}
-#           libraries:
-#             - whl: ./dist/*.whl
+        - task_key: "evaluate_model"
+          depends_on:
+            - task_key: "train_model"
+          # job_cluster_key: "credit-default-cluster"
+          existing_cluster_id: 1109-205408-dob4qyuc
+          spark_python_task:
+            python_file: "workflows/evaluate_model.py"
+            parameters:
+              - "--root_path"
+              - ${var.root_path}
+              - "--new_model_uri"
+              - "{{tasks.train_model.values.new_model_uri}}"
+              - "--job_run_id"
+              - "{{job.id}}"
+              - "--git_sha"
+              - ${var.git_sha}
+          libraries:
+            - whl: ./dist/*.whl
 
-#         - task_key: model_update
-#           condition_task:
-#             op: "EQUAL_TO"
-#             left: "{{tasks.evaluate_model.values.model_update}}"
-#             right: "1"
-#           depends_on:
-#             - task_key: "evaluate_model"
-#         - task_key: "deploy_model"
-#           depends_on:
-#             - task_key: "model_update"
-#               outcome: "true"
-#           job_cluster_key: "credit-default-cluster"
-#           # existing_cluster_id: 1109-205408-dob4qyuc
-#           spark_python_task:
-#             python_file: "workflows/deploy_model.py"
-#             parameters:
-#               - "--root_path"
-#               - ${var.root_path}
-#           libraries:
-#             - whl: ./dist/*.whl
+        - task_key: model_update
+          condition_task:
+            op: "EQUAL_TO"
+            left: "{{tasks.evaluate_model.values.model_update}}"
+            right: "1"
+          depends_on:
+            - task_key: "evaluate_model"
+        - task_key: "deploy_model"
+          depends_on:
+            - task_key: "model_update"
+              outcome: "true"
+          # job_cluster_key: "credit-default-cluster"
+          existing_cluster_id: 1109-205408-dob4qyuc
+          spark_python_task:
+            python_file: "workflows/deploy_model.py"
+            parameters:
+              - "--root_path"
+              - ${var.root_path}
+          libraries:
+            - whl: ./dist/*.whl
 
 
 # Two targets
