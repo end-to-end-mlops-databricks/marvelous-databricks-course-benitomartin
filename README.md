@@ -85,8 +85,7 @@ First create a token under Settings --> User --> Developer
 databricks secrets create-scope secret-scope
 
 # Add secret after running command
-databricks secrets put-secret secret-scope data
-bricks-token
+databricks secrets put-secret secret-scope databricks-token
 
 # List secrets
 databricks secrets list-secrets secret-scope
@@ -107,8 +106,6 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - Added create_source_data notebook
 - Fixed dependencies in pyproject.toml (v 0.0.11)
 
-
-
 ## Third PR - Branch: serving
 
 - Reorganized Notebooks Folders
@@ -116,7 +113,6 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 - New Workspace mlops_students (change catalog and schame name)
 - Pyarrow incompatibility with mlflow/feature lookup. Changed o 14.0.2 in wheel 0.0.9
 - Added Notebooks feature/model serving
-
 
 ## Second PR - Branch: mlflow
 

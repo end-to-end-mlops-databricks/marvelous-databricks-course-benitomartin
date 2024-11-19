@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - bundles  # Trigger on push to the 'bundles' branch
+  # push:
+  #   branches:
+  #     - bundles  # Trigger on push to the 'bundles' branch
 
   pull_request:
     branches:
