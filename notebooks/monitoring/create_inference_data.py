@@ -3,12 +3,15 @@
 # MAGIC # Generate synthetic datasets for inference
 
 # COMMAND ----------
+
 import time
 
 import numpy as np
 import pandas as pd
 from databricks.sdk import WorkspaceClient
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import max as spark_max
+from pyspark.sql import functions as F
 from sklearn.ensemble import RandomForestClassifier
 
 from credit_default.utils import load_config
@@ -53,18 +56,16 @@ print(feature_importances.head(4))
 #         Limit_bal    0.061058
 
 # COMMAND ----------
-# Define function to create synthetic data without random state
-# This will add some data drift in the Bill_amt columns
+
+# Get Existing IDs 
 features_balanced = spark.table(f"{catalog_name}.{schema_name}.features_balanced").toPandas()
 existing_ids = set(int(id) for id in features_balanced["Id"])
 
 
 # COMMAND ----------
-# Define function to create synthetic data without random state
-# This will add some data drift in the Bill_amt columns
-features_balanced = spark.table(f"{catalog_name}.{schema_name}.features_balanced").toPandas()
-existing_ids = set(int(id) for id in features_balanced["Id"])
 
+# Define function to create synthetic data without random state
+# This will add some data drift in the above columns (if drift=True)
 
 def create_synthetic_data(df, drift=False, num_rows=100):
     synthetic_data = pd.DataFrame()
@@ -125,6 +126,8 @@ def create_synthetic_data(df, drift=False, num_rows=100):
     return synthetic_data
 
 
+# COMMAND ----------
+
 # Create synthetic data normal
 combined_set = pd.concat([train_set, test_set], ignore_index=True)
 
@@ -133,8 +136,23 @@ print(synthetic_data_normal.dtypes)
 print(synthetic_data_normal.head())
 
 # COMMAND ----------
+
+print(f"Before: {len(existing_ids)}")
+
+# COMMAND ----------
+
 # Update existing_ids with the IDs from synthetic_data_normal
 existing_ids.update(int(id) for id in synthetic_data_normal["Id"])
+
+# COMMAND ----------
+
+print(f"After: {len(existing_ids)}")
+
+# COMMAND ----------
+
+print(synthetic_data_normal.tail())
+
+# COMMAND ----------
 
 # Create synthetic data skewed
 synthetic_data_skewed = create_synthetic_data(combined_set, drift=True, num_rows=200)
@@ -142,32 +160,48 @@ print(synthetic_data_normal.dtypes)
 print(synthetic_data_skewed.head())
 
 # COMMAND ----------
-##  Write synthetic data to Delta Lake
+
+# Cast columns to match the schema of the Delta table
+columns_to_cast = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6"]
+
+##  Write normal data to Delta Lake
 synthetic_normal_df = spark.createDataFrame(synthetic_data_normal)
+for column in columns_to_cast:
+    synthetic_normal_df = synthetic_normal_df.withColumn(column, F.col(column).cast("double"))
+    
 synthetic_normal_df.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.inference_set_normal")
 
+##  Write synthetic data to Delta Lake
 synthetic_skewed_df = spark.createDataFrame(synthetic_data_skewed)
+for column in columns_to_cast:
+    synthetic_skewed_df = synthetic_skewed_df.withColumn(column, F.col(column).cast("double"))
+    
 synthetic_skewed_df.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.inference_set_skewed")
+
 # COMMAND ----------
 
 workspace = WorkspaceClient()
 
+columns = config.features.clean
+columns_str = ", ".join(columns)
+
 # Write normal into feature table; update online table
 spark.sql(f"""
     INSERT INTO {catalog_name}.{schema_name}.features_balanced
-    SELECT Id, Update_timestamp_utc
+    SELECT {columns_str}
     FROM {catalog_name}.{schema_name}.inference_set_normal
 """)
 
 # Write skewed into feature table; update online table
 spark.sql(f"""
     INSERT INTO {catalog_name}.{schema_name}.features_balanced
-    SELECT Id, Update_timestamp_utc
+    SELECT {columns_str}
     FROM {catalog_name}.{schema_name}.inference_set_skewed
 """)
 
 
 # COMMAND ----------
+
 update_response = workspace.pipelines.start_update(pipeline_id=pipeline_id, full_refresh=False)
 
 while True:

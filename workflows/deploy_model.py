@@ -69,7 +69,7 @@ try:
             ServedEntityInput(
                 entity_name=f"{catalog_name}.{schema_name}.credit_model_feature",
                 scale_to_zero_enabled=True,
-                workload_size="Small",
+                workload_size="Medium",
                 entity_version=model_version,
             )
         ],
