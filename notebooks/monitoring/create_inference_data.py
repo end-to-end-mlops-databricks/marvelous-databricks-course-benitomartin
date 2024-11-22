@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 from databricks.sdk import WorkspaceClient
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import max as spark_max
 from pyspark.sql import functions as F
 from sklearn.ensemble import RandomForestClassifier
 
