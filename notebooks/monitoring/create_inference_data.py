@@ -1,4 +1,6 @@
 # Databricks notebook source
+# MAGIC %md
+# MAGIC # Generate synthetic datasets for infere
 
 # COMMAND ----------
 
