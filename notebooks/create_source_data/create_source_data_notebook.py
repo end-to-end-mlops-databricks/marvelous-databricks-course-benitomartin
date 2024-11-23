@@ -120,6 +120,10 @@ synthetic_df.tail()
 
 # COMMAND ----------
 
+list(synthetic_df.Id)
+
+# COMMAND ----------
+
 combined_set.Bill_amt2.min(), combined_set.Bill_amt2.max()
 
 # COMMAND ----------

@@ -63,6 +63,15 @@ existing_ids = set(int(id) for id in features_balanced["Id"])
 
 # COMMAND ----------
 
+existing_ids = list(int(id) for id in features_balanced["Id"])
+
+
+# COMMAND ----------
+
+len(list(existing_ids))
+
+# COMMAND ----------
+
 # Define function to create synthetic data without random state
 # This will add some data drift in the above columns (if drift=True)
 
