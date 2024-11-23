@@ -129,6 +129,12 @@ try:
         # """)
         # logger.info("Feature table updated successfully.")
 
+        # Verify the number of current_rows
+        current_rows = spark.sql(f"""
+                SELECT COUNT(*) as count
+                FROM {catalog_name}.{schema_name}.features_balanced
+            """).collect()[0]["count"]
+
         spark.sql(f"""
             INSERT INTO {catalog_name}.{schema_name}.features_balanced
             SELECT DISTINCT {columns_str}
@@ -147,14 +153,13 @@ try:
             AND s.Update_timestamp_utc > '{latest_timestamp}'
         """)
 
-        # Verify the number of rows inserted
-        inserted_rows = spark.sql(f"""
-            SELECT COUNT(*) as count
-            FROM {catalog_name}.{schema_name}.features_balanced
-            WHERE Update_timestamp_utc > '{latest_timestamp}'
-        """).collect()[0]["count"]
+        # Verify the number of current_rows updated
+        new_rows = spark.sql(f"""
+                SELECT COUNT(*) as count
+                FROM {catalog_name}.{schema_name}.features_balanced
+            """).collect()[0]["count"]
 
-        logger.info(f"Feature table updated with {inserted_rows} new rows")
+        logger.info(f"Feature table updated with {new_rows - current_rows} new rows")
         logger.info("Feature table updated successfully.")
 
         # Update the online feature table via pipeline
