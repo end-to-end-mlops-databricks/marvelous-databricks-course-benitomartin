@@ -1,15 +1,10 @@
 # Databricks notebook source
-import time
-import requests
 import datetime
 import itertools
-import numpy as np
-import pandas as pd
+import time
 
+import requests
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import max as spark_max
-from pyspark.sql import functions as F
-from sklearn.ensemble import RandomForestClassifier
 
 from credit_default.utils import load_config
 
@@ -21,9 +16,6 @@ spark = SparkSession.builder.getOrCreate()
 config = load_config("../../project_config.yml")
 catalog_name = config.catalog_name
 schema_name = config.schema_name
-parameters = config.parameters
-target = config.target[0].new_name
-pipeline_id = config.pipeline_id
 columns = config.features.clean
 
 # COMMAND ----------
@@ -39,7 +31,7 @@ test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
 
 # token = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
 
-token = dbutils.secrets.get(scope="secret-scope", key="databricks-token") # noqa: F821
+token = dbutils.secrets.get(scope="secret-scope", key="databricks-token")  # noqa: F821
 
 host = spark.conf.get("spark.databricks.workspaceUrl")
 
@@ -56,6 +48,7 @@ test_set_records = test_set[columns].to_dict(orient="records")
 
 # Send request to the endpoint
 
+
 def send_request_https(dataframe_record):
     model_serving_endpoint = f"https://{host}/serving-endpoints/credit-default-model-serving-feature/invocations"
     response = requests.post(
@@ -64,6 +57,7 @@ def send_request_https(dataframe_record):
         json={"dataframe_records": [dataframe_record]},
     )
     return response
+
 
 # COMMAND ----------
 
@@ -78,7 +72,7 @@ for index, record in enumerate(itertools.cycle(test_set_records)):
     response = send_request_https(record)
     print(f"Response status: {response.status_code}")
     print(f"Response text: {response.text}")
-    
+
     time.sleep(0.2)
 
 # COMMAND ----------

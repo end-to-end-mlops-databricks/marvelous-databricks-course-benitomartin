@@ -56,7 +56,7 @@ print(feature_importances.head(4))
 
 # COMMAND ----------
 
-# Get Existing IDs 
+# Get Existing IDs
 features_balanced = spark.table(f"{catalog_name}.{schema_name}.features_balanced").toPandas()
 existing_ids = set(int(id) for id in features_balanced["Id"])
 
@@ -65,6 +65,7 @@ existing_ids = set(int(id) for id in features_balanced["Id"])
 
 # Define function to create synthetic data without random state
 # This will add some data drift in the above columns (if drift=True)
+
 
 def create_synthetic_data(df, drift=False, num_rows=100):
     synthetic_data = pd.DataFrame()
@@ -167,14 +168,14 @@ columns_to_cast = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay
 synthetic_normal_df = spark.createDataFrame(synthetic_data_normal)
 for column in columns_to_cast:
     synthetic_normal_df = synthetic_normal_df.withColumn(column, F.col(column).cast("double"))
-    
+
 synthetic_normal_df.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.inference_set_normal")
 
 ##  Write synthetic data to Delta Lake
 synthetic_skewed_df = spark.createDataFrame(synthetic_data_skewed)
 for column in columns_to_cast:
     synthetic_skewed_df = synthetic_skewed_df.withColumn(column, F.col(column).cast("double"))
-    
+
 synthetic_skewed_df.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.inference_set_skewed")
 
 # COMMAND ----------
