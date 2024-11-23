@@ -17,7 +17,7 @@ catalog_name = config.catalog_name
 schema_name = config.schema_name
 target = config.target[0].new_name
 
-inf_table = spark.sql(f"SELECT * FROM {catalog_name}.{schema_name}.`model-serving-fe_payload`")
+inf_table = spark.sql(f"SELECT * FROM {catalog_name}.{schema_name}.`model-serving-feature_payload`")
 
 ## Dataframe records on payload table under response column
 # {"dataframe_records": [{"Id": "43565", "Limit_bal": 198341.0, "Sex": 2.0,
@@ -93,29 +93,6 @@ df_final = df_exploded.select(
     "databricks_request_id",
     "execution_time_ms",
     F.col("record.Id").alias("Id"),
-    F.col("record.Limit_bal").alias("Limit_bal"),
-    F.col("record.Sex").alias("Sex"),
-    F.col("record.Education").alias("Education"),
-    F.col("record.Marriage").alias("Marriage"),
-    F.col("record.Age").alias("Age"),
-    F.col("record.Pay_0").alias("Pay_0"),
-    F.col("record.Pay_2").alias("Pay_2"),
-    F.col("record.Pay_3").alias("Pay_3"),
-    F.col("record.Pay_4").alias("Pay_4"),
-    F.col("record.Pay_5").alias("Pay_5"),
-    F.col("record.Pay_6").alias("Pay_6"),
-    F.col("record.Bill_amt1").alias("Bill_amt1"),
-    F.col("record.Bill_amt2").alias("Bill_amt2"),
-    F.col("record.Bill_amt3").alias("Bill_amt3"),
-    F.col("record.Bill_amt4").alias("Bill_amt4"),
-    F.col("record.Bill_amt5").alias("Bill_amt5"),
-    F.col("record.Bill_amt6").alias("Bill_amt6"),
-    F.col("record.Pay_amt1").alias("Pay_amt1"),
-    F.col("record.Pay_amt2").alias("Pay_amt2"),
-    F.col("record.Pay_amt3").alias("Pay_amt3"),
-    F.col("record.Pay_amt4").alias("Pay_amt4"),
-    F.col("record.Pay_amt5").alias("Pay_amt5"),
-    F.col("record.Pay_amt6").alias("Pay_amt6"),
     F.col("parsed_response.predictions")[0].alias("prediction"),
     F.lit("credit_model_feature").alias("model_name"),
 )
@@ -140,17 +117,14 @@ df_final_with_status = (
     .dropna(subset=["default", "prediction"])
 )
 
+# Create model monitoring table
 features_balanced = spark.table(f"{catalog_name}.{schema_name}.features_balanced")
 
 
 df_final_with_features = df_final_with_status.join(features_balanced, on="Id", how="left")
 
 
-df_final_with_features.write.format("delta").mode("append").saveAsTable(
-    f"{catalog_name}.{schema_name}.model_monitoring"
-)
+df_final_with_features.write.mode("append").saveAsTable(f"{catalog_name}.{schema_name}.model_monitoring")
 
 
-# workspace.quality_monitors.run_refresh(
-#     table_name=f"{catalog_name}.{schema_name}.model_monitoring"
-# )
+workspace.quality_monitors.run_refresh(table_name=f"{catalog_name}.{schema_name}.model_monitoring")
