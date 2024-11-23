@@ -48,7 +48,6 @@ test_set_records = test_set[columns].to_dict(orient="records")
 
 # Send request to the endpoint
 
-
 def send_request_https(dataframe_record):
     model_serving_endpoint = f"https://{host}/serving-endpoints/credit-default-model-serving-feature/invocations"
     response = requests.post(
@@ -61,8 +60,8 @@ def send_request_https(dataframe_record):
 
 # COMMAND ----------
 
-# Loop over test records and send requests for 20 minutes
-end_time = datetime.datetime.now() + datetime.timedelta(minutes=20)
+# Loop over test records and send requests for 10 minutes
+end_time = datetime.datetime.now() + datetime.timedelta(minutes=10)
 
 for index, record in enumerate(itertools.cycle(test_set_records)):
     if datetime.datetime.now() >= end_time:
@@ -77,8 +76,8 @@ for index, record in enumerate(itertools.cycle(test_set_records)):
 
 # COMMAND ----------
 
-# Loop over normal records and send requests for 20 minutes
-end_time = datetime.datetime.now() + datetime.timedelta(minutes=20)
+# Loop over normal records and send requests for 10 minutes
+end_time = datetime.datetime.now() + datetime.timedelta(minutes=10)
 
 for index, record in enumerate(itertools.cycle(sampled_normal_records)):
     if datetime.datetime.now() >= end_time:
@@ -93,8 +92,8 @@ for index, record in enumerate(itertools.cycle(sampled_normal_records)):
 
 # COMMAND ----------
 
-# Loop over skewed records and send requests for 30 minutes
-end_time = datetime.datetime.now() + datetime.timedelta(minutes=30)
+# Loop over skewed records and send requests for 10 minutes
+end_time = datetime.datetime.now() + datetime.timedelta(minutes=15)
 
 for index, record in enumerate(itertools.cycle(sampled_skewed_records)):
     if datetime.datetime.now() >= end_time:

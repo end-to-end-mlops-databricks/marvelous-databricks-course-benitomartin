@@ -63,7 +63,7 @@ existing_ids = set(int(id) for id in features_balanced["Id"])
 
 # COMMAND ----------
 
-existing_ids = list(int(id) for id in features_balanced["Id"])
+# existing_ids = list(int(id) for id in features_balanced["Id"])
 
 
 # COMMAND ----------
@@ -142,7 +142,7 @@ combined_set = pd.concat([train_set, test_set], ignore_index=True)
 
 synthetic_data_normal = create_synthetic_data(combined_set, drift=False, num_rows=200)
 print(synthetic_data_normal.dtypes)
-print(synthetic_data_normal.head())
+print(synthetic_data_normal)
 
 # COMMAND ----------
 
@@ -159,14 +159,10 @@ print(f"After: {len(existing_ids)}")
 
 # COMMAND ----------
 
-print(synthetic_data_normal.tail())
-
-# COMMAND ----------
-
 # Create synthetic data skewed
 synthetic_data_skewed = create_synthetic_data(combined_set, drift=True, num_rows=200)
 print(synthetic_data_normal.dtypes)
-print(synthetic_data_skewed.head())
+print(synthetic_data_skewed)
 
 # COMMAND ----------
 
@@ -189,6 +185,7 @@ synthetic_skewed_df.write.mode("append").saveAsTable(f"{catalog_name}.{schema_na
 
 # COMMAND ----------
 
+# Update offline table
 workspace = WorkspaceClient()
 
 columns = config.features.clean
@@ -211,6 +208,7 @@ spark.sql(f"""
 
 # COMMAND ----------
 
+# Update online table
 update_response = workspace.pipelines.start_update(pipeline_id=pipeline_id, full_refresh=False)
 
 while True:
