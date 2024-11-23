@@ -36,7 +36,6 @@ min(existing_ids), max(existing_ids)
 
 # COMMAND ----------
 
-
 # Generate a dataframe with unique values for each column with few unique values
 # to identify the discrete values
 def generate_unique_values_dataframe(df, columns):
