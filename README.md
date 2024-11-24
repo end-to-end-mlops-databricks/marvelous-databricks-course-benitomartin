@@ -101,6 +101,7 @@ https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/dat
 
 - Added monitoring folder
 - Added refresh_monitor.py workflow
+- Updated bundle file with monitoring
 
 ## Fourth PR - Branch: bundles
 
