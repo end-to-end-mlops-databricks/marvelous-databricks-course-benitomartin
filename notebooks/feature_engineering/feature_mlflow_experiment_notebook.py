@@ -87,7 +87,7 @@ train_pdf = spark.table(f"{config.catalog_name}.{config.schema_name}.train_set")
 
 # COMMAND ----------
 
-train_pdf.head()
+train_pdf.info()
 
 # COMMAND ----------
 

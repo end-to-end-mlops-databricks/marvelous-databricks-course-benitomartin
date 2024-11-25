@@ -121,6 +121,10 @@ synthetic_df.tail()
 
 # COMMAND ----------
 
+list(synthetic_df.Id)
+
+# COMMAND ----------
+
 combined_set.Bill_amt2.min(), combined_set.Bill_amt2.max()
 
 # COMMAND ----------
@@ -134,16 +138,16 @@ synthetic_df.info()
 
 # COMMAND ----------
 
-# # Create source_data table with the same schema as train_set
-# train_set_schema = spark.table(f"{catalog_name}.{schema_name}.train_set").schema
+# Create source_data table with the same schema as train_set
+train_set_schema = spark.table(f"{catalog_name}.{schema_name}.train_set").schema
 
-# # Create an empty DataFrame with the same schema
-# empty_source_data_df = spark.createDataFrame(data=[], schema=train_set_schema)
+# Create an empty DataFrame with the same schema
+empty_source_data_df = spark.createDataFrame(data=[], schema=train_set_schema)
 
-# # Create an empty source_data table
-# empty_source_data_df.write.mode("overwrite").saveAsTable(f"{catalog_name}.{schema_name}.source_data")
+# Create an empty source_data table
+empty_source_data_df.write.mode("overwrite").saveAsTable(f"{catalog_name}.{schema_name}.source_data")
 
-# print(f"Empty table '{catalog_name}.{schema_name}.source_data' created successfully.")
+print(f"Empty table '{catalog_name}.{schema_name}.source_data' created successfully.")
 
 # COMMAND ----------
 

@@ -15,18 +15,15 @@ import argparse
 import sys
 
 import mlflow
-import pandas as pd
 from databricks import feature_engineering
 
 # from databricks.connect import DatabricksSession
 from databricks.feature_engineering import FeatureLookup
 from databricks.sdk import WorkspaceClient
-from imblearn.over_sampling import SMOTE
 from lightgbm import LGBMClassifier
 from loguru import logger
 from mlflow.models import infer_signature
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import roc_auc_score  # classification_report, confusion_matrix,
 from sklearn.pipeline import Pipeline
@@ -82,37 +79,11 @@ try:
     train_pdf = spark.table(f"{catalog_name}.{schema_name}.train_set").toPandas()
     test_set = spark.table(f"{catalog_name}.{schema_name}.test_set").toPandas()
 
-    # Separate features and target for SMOTE
-    X = train_pdf[columns_wo_id]
-    y = train_pdf[target]
-
-    # Apply SMOTE for balancing
-    smote = SMOTE(random_state=parameters["random_state"])
-    X_balanced, y_balanced = smote.fit_resample(X, y)
-    logger.info(f"SMOTE applied. Original: {len(X)}, Balanced: {len(X_balanced)}.")
-
-    # Create balanced DataFrame
-    balanced_df = pd.DataFrame(X_balanced, columns=columns_wo_id)
-    num_original_samples = len(train_pdf)
-    len_range = len(train_pdf) + len(test_set) + 1
-    balanced_df["Id"] = train_pdf["Id"].values.tolist() + [
-        str(i) for i in range(len_range, len_range + len(balanced_df) - num_original_samples)
-    ]
-    balanced_spark_df = spark.createDataFrame(balanced_df)
-
-    # Cast specific columns to match Delta table schema
-    columns_to_cast = ["Sex", "Education", "Marriage", "Age", "Pay_0", "Pay_2", "Pay_3", "Pay_4", "Pay_5", "Pay_6"]
-    feature_table_name = f"{catalog_name}.{schema_name}.features_balanced"
-
-    for column in columns_to_cast:
-        balanced_spark_df = balanced_spark_df.withColumn(column, F.col(column).cast("double"))
-
-    balanced_spark_df.write.format("delta").mode("overwrite").saveAsTable(feature_table_name)
-    logger.info(f"Feature table '{feature_table_name}' updated with balanced data.")
-
     # Now use create_training_set to create balanced training set
     # Drop the original features that will be looked up from the feature store
     # Define the list of columns you want to drop, including "Update_timestamp_utc"
+
+    feature_table_name = f"{catalog_name}.{schema_name}.features_balanced"
     columns_to_drop = columns_wo_id + ["Update_timestamp_utc"]
     train_set = spark.table(f"{catalog_name}.{schema_name}.train_set").drop(*columns_to_drop)
     logger.info(f"Train set columns for feature table: {train_set.columns}")

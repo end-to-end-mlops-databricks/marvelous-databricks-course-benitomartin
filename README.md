@@ -96,6 +96,13 @@ databricks secrets list-secrets secret-scope
 Default of Credit Card Clients Dataset
 https://www.kaggle.com/datasets/uciml/default-of-credit-card-clients-dataset/data
 
+
+## Fifth PR - Branch: inference
+
+- Added monitoring folder
+- Added refresh_monitor.py workflow
+- Updated bundle file with monitoring
+
 ## Fourth PR - Branch: bundles
 
 - Updated config class with A/B test params

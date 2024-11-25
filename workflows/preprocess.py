@@ -75,11 +75,15 @@ try:
         .select(spark_max("Update_timestamp_utc").alias("max_update_timestamp"))
         .collect()[0]["max_update_timestamp"]
     )
+    logger.info(f"Latest timestamp across train sets: {max_train_timestamp}")
+
     max_test_timestamp = (
         spark.table(f"{catalog_name}.{schema_name}.test_set")
         .select(spark_max("Update_timestamp_utc").alias("max_update_timestamp"))
         .collect()[0]["max_update_timestamp"]
     )
+    logger.info(f"Latest timestamp across test sets: {max_test_timestamp}")
+
     latest_timestamp = max(max_train_timestamp, max_test_timestamp)
     logger.info(f"Latest timestamp across train and test sets: {latest_timestamp}")
 
@@ -105,22 +109,57 @@ try:
         columns_str = ", ".join(f"s.{col}" for col in columns)
         logger.debug(f"Columns for feature table update: {columns_str}")
 
+        # spark.sql(f"""
+        #     INSERT INTO {catalog_name}.{schema_name}.features_balanced
+        #     SELECT DISTINCT {columns_str}
+        #     FROM {catalog_name}.{schema_name}.source_data s
+        #     JOIN (
+        #         SELECT Id, Update_timestamp_utc
+        #         FROM {catalog_name}.{schema_name}.train_set
+        #         WHERE Update_timestamp_utc > '{latest_timestamp}'
+
+        #         UNION ALL
+
+        #         SELECT Id, Update_timestamp_utc
+        #         FROM {catalog_name}.{schema_name}.test_set
+        #         WHERE Update_timestamp_utc > '{latest_timestamp}'
+        #     ) new_records
+        #     ON s.Id = new_records.Id
+        #     WHERE s.Update_timestamp_utc > '{latest_timestamp}'
+        # """)
+        # logger.info("Feature table updated successfully.")
+
+        # Verify the number of current_rows
+        current_rows = spark.sql(f"""
+                SELECT COUNT(*) as count
+                FROM {catalog_name}.{schema_name}.features_balanced
+            """).collect()[0]["count"]
+
         spark.sql(f"""
             INSERT INTO {catalog_name}.{schema_name}.features_balanced
             SELECT DISTINCT {columns_str}
             FROM {catalog_name}.{schema_name}.source_data s
-            JOIN (
-                SELECT Id, Update_timestamp_utc
-                FROM {catalog_name}.{schema_name}.train_set
-                WHERE Update_timestamp_utc > '{latest_timestamp}'
-                UNION ALL
-                SELECT Id, Update_timestamp_utc
-                FROM {catalog_name}.{schema_name}.test_set
-                WHERE Update_timestamp_utc > '{latest_timestamp}'
-            ) new_records
-            ON s.Id = new_records.Id
-            WHERE s.Update_timestamp_utc > '{latest_timestamp}'
+            WHERE EXISTS (
+                SELECT 1
+                FROM (
+                    SELECT Id FROM {catalog_name}.{schema_name}.train_set
+                    WHERE Update_timestamp_utc > '{latest_timestamp}'
+                    UNION ALL
+                    SELECT Id FROM {catalog_name}.{schema_name}.test_set
+                    WHERE Update_timestamp_utc > '{latest_timestamp}'
+                ) new_records
+                WHERE s.Id = new_records.Id
+            )
+            AND s.Update_timestamp_utc > '{latest_timestamp}'
         """)
+
+        # Verify the number of current_rows updated
+        new_rows = spark.sql(f"""
+                SELECT COUNT(*) as count
+                FROM {catalog_name}.{schema_name}.features_balanced
+            """).collect()[0]["count"]
+
+        logger.info(f"Feature table updated with {new_rows - current_rows} new rows")
         logger.info("Feature table updated successfully.")
 
         # Update the online feature table via pipeline

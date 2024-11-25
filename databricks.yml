@@ -6,6 +6,9 @@
 bundle:
   name: marvelous-databricks-course-benitomartin
 
+include:
+  - bundle_monitoring.yml
+
 # These are the default artifact settings if not otherwise overridden in
 # the following "targets" top-level mapping.
 artifacts:

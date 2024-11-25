@@ -7,7 +7,7 @@
 
 catalog_name: credit
 schema_name: default
-pipeline_id: b90515b0-e6ce-40a2-a795-977f394c4137 # Pipeline Id under "features_balanced_online" table in catalog. Created in model_serving_feat_lookup_notebook.py
+pipeline_id: 4be66e88-11e8-4988-9fa3-459b9b28a83c # Pipeline Id under "features_balanced_online" table in catalog. Created in model_serving_feat_lookup_notebook.py
 
 
 parameters:
